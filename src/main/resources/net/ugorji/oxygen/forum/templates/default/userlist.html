@@ -1,0 +1,30 @@
+
+<h3>${t.i18n("user_listing")}</h3>
+
+<table>
+<thead>
+<th>${t.i18n("userprefs_username")}</th>
+<th>${t.i18n("userprefs_email")}</th>
+<th>${t.i18n("userprefs_location")}</th>
+<th>${t.i18n("userprefs_website")}</th>
+<th>${t.i18n("userprefs_join_date")}</th>
+<th><nobr>${t.i18n("userprefs_num_posts")}</nobr></th>
+<th class="oxyforum-col-primary">${t.i18n("userprefs_contacts")}</th>
+</thead>
+<#list t.getUsers() as x>
+<#assign v4=x.getName() >
+<tr>
+<td><a href="${t.getURL("userprofile", x.getId())}">${v4}</a></td>
+<td><nobr><#if (t.getUserpref(v4, "email")?has_content)><a href="mailto:${t.getUserpref(v4, "email")}">${t.getUserpref(v4, "email")?html}</a> </#if></nobr></td>
+<td><nobr><#if (t.getUserpref(v4, "location")?has_content)>${t.getUserpref(v4, "location")} </#if></nobr></td>
+<td><nobr><#if (t.getUserpref(v4, "website")?has_content)><a href="${t.getUserpref(v4, "website")}">${t.getUserpref(v4, "website")?html}</a> </#if></nobr></td>
+<td><nobr>${x.getRegdate()?date}</nobr></td>
+<td><nobr>${t.stats().getNumPostsForUser(x.getId())}</nobr></td>
+<td>
+  <#if (t.getUserpref(v4, "yim")?has_content)><a href="ymsgr:sendim?${t.getUserpref(v4, "yim")}">${t.i18n("topic_yahoo_im")}: ${t.getUserpref(v4, "yim")}</a> | </#if>
+  <#if (t.getUserpref(v4, "aim")?has_content)><a href="aim:goim?screenname=${t.getUserpref(v4, "aim")}">${t.i18n("topic_aol_im")}: ${t.getUserpref(v4, "aim")}</a>   | </#if>
+  <#if (t.getUserpref(v4, "msnm")?has_content)>${t.i18n("topic_msn_im")}: ${t.getUserpref(v4, "msnm")} | </#if>
+</td>
+</tr>
+</#list>
+</table>

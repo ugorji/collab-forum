@@ -1,0 +1,10 @@
+<p/>
+${t.i18n("topic_watch_notification_message_posted_to_topic")}: <b>${topic.getTitle()}</b>
+<p/>
+${t.i18n("topic_watch_notification_topic_viewable_at")}: <a href="${link}">${link}</a>.
+<p/>
+${t.i18n("topic_watch_notification_content_below")}:
+<p/>
+<hr/>
+
+${ForumUtil.writeTextAsHtmlMarkup(post.getText(), writer)}

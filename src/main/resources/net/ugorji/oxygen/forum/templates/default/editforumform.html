@@ -1,0 +1,50 @@
+<#assign f=editforumform.getForum() >
+<form action="${t.getURL("editforum")}" method="post">
+<input type="hidden" name="forumid" value="${(f.getId())?default("")}" />
+<div class="oxyforum-form-table">
+<table>
+  <tr>
+    <th colspan="2">${t.i18n("edit_forum_page_header")}</th>
+  </tr>
+  <tr>
+    <td>${t.i18n("name")}</td>
+    <td><input type="text" size="80" name="name" value="${f.getName()}" /></td>
+  </tr>
+  <tr>
+    <td>${t.i18n("parent_forum")}</td>
+    <td>
+      <select name="parentforum">
+        <@forumTreeAsSelectOptions vindent=1 vforum=t.getTopForum() vselectedid=f.getId()?default(t.getTopForum().getId()) />
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td>${t.i18n("description")}</td>
+    <td><textarea cols="80" rows="10" name="description">${f.getDescription()}</textarea></td>
+  </tr>
+  <tr>
+    <td>${t.i18n("forum_prune_days")}</td>
+    <td><input type="text" size="80" name="prunedays" value="${f.getPrunedays()?c}" /></td>
+  </tr>
+  <tr>
+    <td>${t.i18n("forum_flags")}</td>
+    <td>
+      <input id="editforum_write" type="checkbox" name="write" value="true" ${f.isWrite()?string("checked", "")}/>
+      <label for="editforum_write">${t.i18n("fprum_write")}</label>
+      <input id="editforum_read" type="checkbox" name="read" value="true" ${f.isRead()?string("checked", "")}/>
+      <label for="editforum_read">${t.i18n("forum_read")}</label>
+      <input id="editforum_high_visibility" type="checkbox" name="highvisibility" value="true" ${f.isHighvisibility()?string("checked", "")}/>
+      <label for="editforum_high_visibility">${t.i18n("forum_high_visibility")}</label>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <input type="submit" value="${t.i18n("update_forum")}" />
+      <input type="reset" value="${t.i18n("reset")}" />
+      <input type="button" value="${t.i18n("cancel")}" onClick="location.href='${t.getURL("manageforums", (f.getId())?default("") )}'" />
+    </td>
+  </tr>
+</table>
+</div>
+
+</form>

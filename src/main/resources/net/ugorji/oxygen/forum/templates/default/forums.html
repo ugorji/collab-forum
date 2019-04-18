@@ -1,0 +1,53 @@
+<#macro forumrow t x isParentRow styleclass>
+  <tr <#if (styleclass?has_content)>class="${styleclass}"</#if> >
+    <td>
+       <#if !isParentRow && (x.getChildForums()?size > 0) >
+         <nobr><span class="oxyforum-expand-plus"><a href="${t.getURL("forums", x.getId())}">+${x.getChildForums()?size}</a></span></nobr>
+       </#if><!-- <img src="${t.getContextPath()}/images/plus.gif" border="0"/> -->
+    </td>
+    <td class="oxyforum-col-primary"><b><#if (x.getId() > 1)><a href="${t.getURL("forum", x.getId())}"></#if>${x.getName()?html}<#if (x.getId() > 1)></a></#if></b><br/>
+        ${x.getDescription()?html}
+    </td>
+    <td>${t.stats().getNumPostsForForum(x.getId())}</td>
+    <td>${t.stats().getNumTopicsForForum(x.getId())}</td>        
+    <td><#if (t.getLastPost(x)?exists) >
+        <#assign xt2=t.getLastPost(x) >
+        <nobr>${xt2.getDate()?datetime}</nobr> 
+        <nobr>${t.i18n("by")} <a href="${t.getURL("userprofile", xt2.getAuthor().getId() )}">${xt2.getAuthor().getName()}</a></nobr>
+        </#if></td>
+  </tr>
+</#macro>
+
+<#assign f=t.getForum() >
+
+<table>
+  <tr>
+    <th colspan="5">${t.i18n("child_forums")} ${f.getName()?html}</th>
+  </tr>
+  <tr>
+    <th>&nbsp;&nbsp;&nbsp;</th><#-- ${t.i18n("expand")} -->
+    <th class="oxyforum-col-primary">${t.i18n("forum_name")}</th>
+    <th><nobr>${t.i18n("num_topics")}</nobr></th>
+    <th><nobr>${t.i18n("num_posts")}</nobr></th>
+    <th>${t.i18n("last_post")}</th>
+  </tr>
+  <@forumrow t=t x=f isParentRow=true styleclass="oxyforum-parentrow" />
+  <#list f.getChildForums() as x>
+    <@forumrow t=t x=x isParentRow=false styleclass="" />
+  </#list>
+  <tr>
+    <td colspan="5">${t.i18n("footer_line")}</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>${t.i18n("who_is_online")}</th>
+  </tr>
+  <tr>
+    <td>${t.i18n("total_posted_messages", t.stats().getNumPostedMessages()?string)} <br/>
+        ${t.i18n("total_registered_users", t.stats().getNumRegisteredUsers()?string)} <br/>
+        ${t.i18n("total_users_online", t.getForumEngine().getNumOpenSessions()?string)} <br/>
+    </td>
+  </tr>
+</table>

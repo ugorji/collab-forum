@@ -1,0 +1,32 @@
+<#assign f=t.getForum() >
+<table>
+  <tr>
+    <th colspan="6">${t.i18n("topics_of")} ${f.getName()}</th>
+  </tr>
+  <tr>
+    <th>${t.i18n("type")}</th>
+    <th class="oxyforum-col-primary">${t.i18n("topic")}</th>
+    <th>${t.i18n("replies")}</th>
+    <th>${t.i18n("views")}</th>
+    <th>${t.i18n("author")}</th>
+    <th>${t.i18n("last_post")}</th>
+  </tr>
+  <#list f.getTopics() as x>
+    <td><#if (x.isHighvisibility())>${t.i18n("post_sticky")}</#if></td>
+    <td class="oxyforum-col-primary"><a href="${t.getURL("topic", x.getId())}">${x.getTitle()}</a></td>
+    <td>${t.stats().getNumRepliesForTopic(x.getId())}</td>
+    <td>${t.stats().getNumViewsForTopic(x.getId())}</td>
+    <td><a href="${t.getURL("userprofile", x.getAuthor().getId())}">${x.getAuthor().getName()}</a></td>
+    <td><#if (t.getLastPost(x)?exists) >
+	<#assign xt2=t.getLastPost(x) >
+      <nobr>${xt2.getDate()?datetime}</nobr> <nobr>${t.i18n("by")} <a href="${t.getURL("userprofile", xt2.getAuthor().getId())}">${xt2.getAuthor().getName()}</a></nobr></#if></td>
+  </tr>
+  </#list>
+  <#assign vAllowCreateTopic=t.allowCreateTopic(f) >
+  <#if ((f.getId() > 1) && vAllowCreateTopic) >
+  <#assign vReplyArgsMap={"forumid":f.getId()?c} >
+  <tr>
+    <td colspan="6"><a href="${t.getURL("postform", vReplyArgsMap)}">${t.i18n("create_topic")}</a></td>
+  </tr>
+  </#if>
+</table>

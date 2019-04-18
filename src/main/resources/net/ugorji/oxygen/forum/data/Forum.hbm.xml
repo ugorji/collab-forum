@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="net.ugorji.oxygen.forum.data.Forum" table="oxyforum_forum">
+    <cache usage="nonstrict-read-write" />
+
+    <id name="id" column="forum_id" type="long">
+      <generator class="identity"/>
+    </id>
+
+    <property name="description" type="string" update="true"
+      insert="true" column="forum_desc" not-null="true" />
+
+    <property name="name" type="string" update="true" insert="true"
+      column="forum_name" not-null="true" />
+
+    <property name="numPosts" type="integer" update="true" insert="true"
+      column="forum_posts" not-null="true" />
+
+    <property name="numTopics" type="integer" update="true"
+      insert="true" column="forum_topics" not-null="true" />
+
+    <property name="order" type="integer" update="true" insert="true"
+      column="forum_order" not-null="true" />
+
+    <property name="pruneDays" type="integer" update="true"
+      insert="true" column="forum_prune_days" not-null="true" />
+
+    <property name="status" type="integer" update="true" insert="true"
+      column="forum_status" not-null="true" />
+
+    <many-to-one name="parentForum" class="net.ugorji.oxygen.forum.data.Forum"
+      cascade="none" outer-join="auto" update="true" insert="true"
+      column="forum_parent_id" />
+    
+    <many-to-one name="lastPost" class="net.ugorji.oxygen.forum.data.Post"
+      cascade="none" outer-join="auto" update="true" insert="true"
+      column="forum_last_post_id" />
+    
+    <set name="childForums" inverse="true" cascade="none"
+      sort="unsorted" order-by="forum_id">
+      <cache usage="nonstrict-read-write" />
+      <key column="forum_parent_id" />
+      <one-to-many class="net.ugorji.oxygen.forum.data.Forum" />
+    </set>
+
+    <set name="topics" inverse="true" cascade="none"
+      sort="unsorted" order-by="topic_type desc, topic_id asc">
+      <cache usage="nonstrict-read-write" />
+      <key column="forum_id" />
+      <one-to-many class="net.ugorji.oxygen.forum.data.Topic" />
+    </set>
+
+  </class>
+
+</hibernate-mapping>

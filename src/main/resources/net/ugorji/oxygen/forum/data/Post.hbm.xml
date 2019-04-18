@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="net.ugorji.oxygen.forum.data.Post" table="oxyforum_post">
+    <cache usage="nonstrict-read-write" />
+
+    <id name="id" column="post_id" type="long">
+      <generator class="identity"/>
+    </id>
+
+    <property name="attachSig" type="boolean" update="true"
+      insert="true" column="post_attach_sig" not-null="true" />
+
+    <property name="ip" type="string" update="true" insert="true"
+      column="poster_ip" not-null="true" />
+
+    <property name="subject" type="string" update="true" insert="true"
+      column="post_subject" not-null="true" />
+
+    <property name="text" type="string" update="true" insert="true"
+      column="post_text" not-null="true" />
+
+    <property name="date" type="timestamp" update="true" insert="true"
+      column="post_date" not-null="false" />
+
+    <many-to-one name="author" class="net.ugorji.oxygen.forum.data.User"
+      cascade="none" outer-join="auto" update="true" insert="true"
+      column="poster_id" not-null="true" />
+
+    <many-to-one name="topic" class="net.ugorji.oxygen.forum.data.Topic"
+      cascade="none" outer-join="auto" update="true" insert="true"
+      column="topic_id" not-null="true" />
+
+    <many-to-one name="parentPost" class="net.ugorji.oxygen.forum.data.Post"
+      cascade="none" outer-join="auto" update="true" insert="true"
+      column="post_parent_id" />
+
+    <set name="childPosts" inverse="true" cascade="none"
+      sort="unsorted" order-by="post_id">
+      <cache usage="nonstrict-read-write" />
+      <key column="post_parent_id" />
+      <one-to-many class="net.ugorji.oxygen.forum.data.Post" />
+    </set>
+
+  </class>
+
+</hibernate-mapping>

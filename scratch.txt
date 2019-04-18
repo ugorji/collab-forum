@@ -1,0 +1,1346 @@
+Port phpbb2 to java
+===================
+General notes
+- no admin screens (let users edit the config file directly)
+- use jsf. it means SEF will not be there ... but thatz ok.
+- use wiki syntax (no bbcode)
+- seperate registration from the forum
+  - there is a different authentication and authorization module section.
+    - user belongs to what group/roles, etc etc etc
+  - emoticons are in a special directory (or base prefix)
+    - they cannot be uploaded (just installable from the main place)
+- everything security is stored outside the DB
+  - e.g. access control, user passwords, etc etc etc
+- *** Try to maintain the same DB schema as phpBB ***
+  - most likely, this will not be fully possible
+- no polls supported
+
+post message to forum
+- delete, create, edit
+- email notification of replies to your post
+- subscribe to a topic
+- Original emoticons to portray emotions
+post private message
+- delete, create, edit
+- 2 folders: inbox, sent
+forums
+- in a tree structure
+- each forum has a parent
+- some forums may be restricted to certain groups
+  (stored outside the DB, like in a configuration file)
+search
+- leverage lucene. for powerful searching
+Security
+- not stored in DB
+- Powerful forum, user and group permission management
+  - control access to viewing, posting, replying, etc
+  - control access to forums only to specific groups
+- Ban usernames, IP addresses/hostnames
+- IP tracking of posts and posters
+- mass email 
+User personalization
+- local, remote and uploadable avatars
+Moderation Features
+- Topic editing
+- Mass delete/move/lock/unlock of posts
+- Topic splitting
+- Option of auto-pruning of old or unanswered messages on a per-forum basis
+Administration Centre
+- Forum setup
+- Word censoring
+- Emoticon setup
+- IP tracking of posts and posters
+Style and Customisation
+- Allow ability for different forums to have different looks??? No.
+
+Tables
+======
+
+----------------------------------------
+
+---- Forum setup
+# Need to do. But skip phpbb_categories (instead, use a tree of forums, so no categories)
+# also, add prune_days to phpbb_forums (so we don't need a different table)
+phpbb_forums
+---- Postings
+# Need to do.
+# Merge phpbb_posts_text into phpbb_posts, and same for privmsgs
+phpbb_posts
+---- statistics
+# Need to do. 
+phpbb_topics (stores info about a topic, and some statistics)
+phpbb_users  (stores user preferences, and some statistics)
+
+----------------------------------------
+
+---- Private Messaging
+# Skip. Profile holds email address. We can give a form to hide this, but internally post the email to the person.
+# We would leverage FCKEditor for this (to send an HTML message).
+phpbb_privmsgs
+
+---- Auth
+# Handle it in Preferences Module.
+phpbb_auth_access
+phpbb_user_group
+phpbb_groups
+phpbb_banlist
+phpbb_users
+phpbb_ranks
+---- Configuration
+# Handle it using a flat file
+phpbb_config
+---- Notification
+# Skip. Handle it using preferences module. Implement a listener (which can respond to events).
+phpbb_topics_watch
+---- Smilies
+# Skip. Handle it within wikiparser.
+phpbb_smilies
+---- Themes and Templates
+# Skip. Handle it using JSF Facelets.
+phpbb_themes
+phpbb_themes_name
+---- Voting
+# Skip. Do not support voting.
+phpbb_vote_desc
+phpbb_vote_results
+phpbb_vote_voters
+---- Search
+# Skip. Handle using Lucene.
+phpbb_search_results
+phpbb_search_wordlist
+phpbb_search_wordmatch
+---- Bad words and Replacements
+# Skip. Handle using a flat file.
+# flat file stores words and replacements
+# Wiki Parser should use this internally ... (within the do_word function).
+phpbb_words
+---- Session Management
+# Skip. Let Webapp handle it.
+phpbb_confirm
+phpbb_disallow
+phpbb_sessions
+---- Not needed
+phpbb_categories (do not use)
+phpbb_posts_text (do not use)
+phpbb_privmsgs_text (do not use)
+
+----------------------------------------
+
+== Strategy
+
+
+The forum will be developed using the following technologies:
+- Hibernate (ORM)
+- Lucene (indexing and searching)
+- FreeMarker (templating where required)
+
+Security
+- Use a Servlet Filter
+  - put the ForumEngine into the threadlocal
+  - put a Subject into the threadlocal, which has getRemoteUser and the roles that user has
+  - *** we need to configure the relevant roles ***
+  
+src/
+  net.ugorji.oxygen/
+    forum/
+      init.properties
+      Forum.properties
+      view/
+        Action classes
+        Action model objects
+      html/
+        freemarker files
+      util/
+      data/
+      database/
+        mysql.sql
+      config/
+        README.txt, etc
+      runtime/
+        README.txt
+
+# The web.xml is never used.
+
+# User can put in oxyforum-override.properties on the classpath 
+(at least, override the default save directory here)
+
+Domain Objects:
+  - ForumConfig()
+  - ForumDAO(ForumConfig)
+    - holds a reference to SessionFactory
+    - all CRUD methods are here
+      - deleteForum, addForum, updateForum, addTopic, addPost, ...
+      - users only use this from here
+  - ForumIndexingManager(ForumConfig)
+  - ForumEngine()
+    - this is a singleton. This is ok, since it's a webapp.
+    - get it by doing ForumEngine.getForumEngine()
+    - at startup, we index the whole thing (listener does)
+      - there is a link to re-index.
+      - while indexing is running, 
+Data Objects
+  - Forum, Topic, Post
+
+
+Use Cases / Specifications
+- Allow user define skin/template
+- Allow base properties, and allow user override the config directory
+- Allow a runtime directory, which holds
+  - user, password, group files
+  - preferences
+  - indexes (for searching)
+- The following use-cases
+  - **** All these are exposed through one single Spring Bean ****
+  - **** This is the ForumEngine class ****
+  - addForum (add a forum, update the index, etc)
+  - updateForum
+  - deleteForum
+  - addTopic
+  - addPost
+  - editPost
+  - getPost
+  - getTopic
+  - getForum
+
+To use cases will demand the following actions:
+ForumViewAction     admin.html          admin            
+ManageForumsAction  manageforums.html   manageforums    id(from ViewCtx)
+ForumViewAction     forums.html         forums          id(from ViewCtx)
+ForumViewAction     forum.html          forum           id(from ViewCtx)
+EditForumFormAction editforumform.html  editforumform   id(from ViewCtx)
+
+DeleteForumAction   -                   deleteforum     id(from ViewCtx)
+EditForumAction     -                   editforum       params: forumid, ...
+
+ViewTopicAction     topic.html          topic           id(from ViewCtx)
+PostFormAction      postform.html       postform        params: forumid, topicid, postid 
+                                                        (for createTopic, createPost, editPost respectively)
+
+PostAction          -                   post            params: forumid, topicid, postid 
+                                                        (for createTopic, createPost, editPost respectively)
+
+
+ForumViewAction     searchform.html     searchform      
+SearchResultsAction searchresults.html  searchresults   
+CreateIndexAction   -                   createindex           
+
+Each action should put in the ViewContext, what the current ForumId is.
+E.g. ViewTopicAction gets the id of the topic, so should store what the 
+
+ViewContext
+- action
+- id (extracted from request parameter: id or from path - the primary id)
+- RequestParameters
+
+----
+
+Use straightforward forum.
+- no jsf, no spring, no thing ...
+- just use hibernate, freemarker, lucene, ...
+- use the homegrown MVC framework - so we can control the URL's et al
+  - action, 
+
+Pages are stored under 
+  src/net.ugorji.oxygen/forum/html/*.html
+Properties are stored under
+  src/net.ugorji.oxygen/forum/init.properties
+
+persistence directory
+- everything else lives under there
+
+There is a single config file ... so no need for a config directory.
+- config file will reference the location of the runtime directory???
+
+Key design:
+- no need for a listener in the code
+- indexing happens explicitly (via admin)
+- so all resources are found via ClassLoader.getResource(...)
+- 
+
+To do:
+- searching / indexing
+  - this is an admin function 
+    (reindex all, index last changes in X # days, etc)
+- recent topics
+- etc ...
+
+
+To start
+========
+- Create the mysql.sql file
+- run it on your database
+- use the hibernate eclipse plugin to reverse-engineer and generate 
+  - POJO classes
+  - hibernate config file
+  - hibernate mapping file
+- make classes to do the other things
+
+package: net.ugorji.oxygen.forum.view
+- backing beans, et al for the UI's
+
+JSF pages:
+- list forums
+- show forum (list topics for a forum)
+  - supports paging
+- view topic (show posts for a topic)
+  - supports paging
+- reply to post
+  - create new topic (means reply to post with ID = -1)
+
+File structure
+src/
+  net.ugorji.oxygen/
+    forum/
+      *.java         (generic helper classes)
+      view/
+        *.java    (JSF backing beans et al)
+      data/
+        *.java (xdoclet'ed files)
+        *.hbm.xml
+        hibernate.cfg.xml
+      html/ 
+        *.html
+web/
+  WEB-INF/
+    faces-config.xml
+    web.xml
+    oxyforum/
+      init.properties
+      database/
+        mysql.sql
+      runtime/
+        README.txt
+      config/
+        config.properties
+        dependency.xml (for picocontainer/nana container)
+        userpasswords.properties
+        groups.properties
+        userpreferences.properties
+
+The HTML Template files
+{{{
+  template.xhtml  (this is the template)
+  forums.xhtml    (show all forums. Allows user to browse)
+  forum.xhtml     (show topics for a given forum)
+                  (put link to create a new topic)
+  topic.xhtml     (show posts for a given topic)
+  post.xhtml      (UI to create a new topic, or reply to a topic, or edit a post)
+                  (if topicId is -1, then we're creating a new topic)
+                  (else if postId is -1, then we're replying to a topic)
+                  (else we're editing a post)
+  userprefs.xhtml (UI to change forum-specific user preferences)
+  admin.xhtml       (show list of admin actions)
+  manageforums.xhtml(show all forums - kinda like p/forums.xhtml)
+  editforum.xhtml   (show UI to edit forum contents
+                     allow user create or edit forums.)
+      
+}}}
+
+(it will kinda look like vbulletin)
+
+package: net.ugorji.oxygen.forum
+ForumConstants
+- 
+ForumUtils.java
+# full of static methods
+# should only be called within the context of a request
+  - at which point, we've had a chance to stuff the ForumEngine into the threadlocal
+  - utilize the lifecycle of JSF to your benefits
+    - in your backing bean, during the apply request phase, U can check the values, and 
+      check authentication, and throw an exception if anything is wrong
+    - then declare an error page to handle that exception appropriately
+Methods
+- getForumEngine()
+- setForumEngine(ForumEngine f)
+- getSessionFactory() - returns a static variable already stored
+- getCurrentSession() 
+- closeCurrentSession()
+
+ForumEngine() implements Closeable 
+- close()
+- reload()
+- getForumConfig()
+- getUserPreferencesManager()
+- getAuthenticationManager()
+- getAuthorizationManager()
+ForumConfig()
+- get(String key)
+- set(String key, String value)
+- getConfigDirectory
+- getRuntimeDirectory
+
+ForumWebappListener()
+- stores the forum engine in the ServletContext
+# we keep the Forum in the ApplicationContext, and also keep it
+# in a threadlocal object
+
+
+Properties here are:
+  
+  net.ugorji.oxygen.forum.manager.userpreferences = $classname
+  net.ugorji.oxygen.forum.manager.authentication  = $classname
+  net.ugorji.oxygen.forum.manager.authorization   = $classname
+
+  net.ugorji.oxygen.forum.board_disable = 0
+  net.ugorji.oxygen.forum.sitename = yourdomain.com
+  net.ugorji.oxygen.forum.site_desc = A _little_ text to describe your forum
+  net.ugorji.oxygen.forum.allow_namechange = 0
+  net.ugorji.oxygen.forum.allow_theme_create = 0
+  net.ugorji.oxygen.forum.allow_avatar_local = 0
+  net.ugorji.oxygen.forum.allow_avatar_remote = 0
+  net.ugorji.oxygen.forum.allow_avatar_upload = 0
+
+  net.ugorji.oxygen.forum.enable_confirm = 0
+  net.ugorji.oxygen.forum.override_user_style = 0
+  net.ugorji.oxygen.forum.posts_per_page = 15
+  net.ugorji.oxygen.forum.topics_per_page = 50
+  net.ugorji.oxygen.forum.hot_threshold = 25
+  net.ugorji.oxygen.forum.max_poll_options = 10
+  net.ugorji.oxygen.forum.max_sig_chars = 255
+  net.ugorji.oxygen.forum.max_inbox_privmsgs = 50
+  net.ugorji.oxygen.forum.max_sentbox_privmsgs = 25
+  net.ugorji.oxygen.forum.max_savebox_privmsgs = 50
+  net.ugorji.oxygen.forum.board_email_sig = Thanks, The Management
+  net.ugorji.oxygen.forum.board_email = youraddress@yourdomain.com
+  net.ugorji.oxygen.forum.smtp_delivery = 0
+  net.ugorji.oxygen.forum.smtp_host =
+  net.ugorji.oxygen.forum.smtp_username =
+  net.ugorji.oxygen.forum.smtp_password =
+  net.ugorji.oxygen.forum.sendmail_fix = 0
+
+  net.ugorji.oxygen.forum.require_activation = 0
+  net.ugorji.oxygen.forum.flood_interval = 15
+  net.ugorji.oxygen.forum.board_email_form = 0
+  net.ugorji.oxygen.forum.avatar_filesize = 6144
+  net.ugorji.oxygen.forum.avatar_max_width = 80
+  net.ugorji.oxygen.forum.avatar_max_height = 80
+  net.ugorji.oxygen.forum.avatar_path = images/avatars
+  net.ugorji.oxygen.forum.avatar_gallery_path = images/avatars/gallery
+  net.ugorji.oxygen.forum.smilies_path = images/smiles
+  net.ugorji.oxygen.forum.default_style = 1
+  net.ugorji.oxygen.forum.default_dateformat = D M d, Y g:i a
+  net.ugorji.oxygen.forum.board_timezone = 0
+  net.ugorji.oxygen.forum.prune_enable = 1
+  net.ugorji.oxygen.forum.privmsg_disable = 0
+  net.ugorji.oxygen.forum.gzip_compress = 0
+  net.ugorji.oxygen.forum.coppa_fax =
+  net.ugorji.oxygen.forum.coppa_mail =
+  net.ugorji.oxygen.forum.record_online_users = 0
+  net.ugorji.oxygen.forum.record_online_date = 0
+  net.ugorji.oxygen.forum.server_name = www.myserver.tld
+  net.ugorji.oxygen.forum.server_port = 80
+  net.ugorji.oxygen.forum.script_path = /phpBB2/
+  net.ugorji.oxygen.forum.version = .0.17
+
+# ######################
+  net.ugorji.oxygen.forum.allow_html = 0
+  net.ugorji.oxygen.forum.allow_html_tags = b,i,u,pre
+  net.ugorji.oxygen.forum.allow_bbcode = 1
+  net.ugorji.oxygen.forum.allow_smilies = 1
+  net.ugorji.oxygen.forum.allow_sig = 1
+
+# we only write the hibernate xml files    
+# we run hbm2ddl to generate the mysql
+# we run hbm2java to generate the java classes
+
+
+Dependencies
+============
+PicoContainer and NanoContainer (for the dependency injection)
+- do not use anymore. There are not enough components to warrant this.
+JSF + Facelets (for the pages and templating)
+Hibernate (for DB persistence)
+- this introduces its own dependencies
+lucene (for search only. no indexing for other reasons.)
+
+Use a servletFilter to do auth.
+Use a sessionListener to do counts, of how many folks have connected et al.
+
+Note
+====
+- only members can post.
+  - so U have to be logged in to post, and U have to be a member to log in.
+
+Thinking of the view
+- should we look like theserverside.com, or like phpbb
+  - theserverside.com does not do avatars et al, phpbb does
+  - tss.com shows threaded view. phpbb shows chronological view.
+
+Profile information
+===================
+User profile information is stored outside the app.
+
+The UserProfileManager client is used to access the user profile.
+
+Making changes to it may happen within the app
+
+The profile info for phpbb includes:
+- signature
+- YIM
+- Timezone
+- Preferred Locale
+- Publicize Email?
+- Attach Signature To Posts?
+- Show If I'm Logged In?
+- Avatar (any arbitrary URL ...)
+
+Templates
+=========
+Each forum can have its own template.
+This is a configuration thing.
+
+Uploads
+===========
+Folks can upload arbitrary files.
+This will allow attachments, and avatars, to be supported.
+
+Folks have to be logged in, to upload files.
+
+These files are stored on the file system, in a place which is 
+viewable online.
+
+Admin configures a 
+- upload dir=/a/b/uploads/
+- upload baseurl = /uploads/
+
+Uploaded files go to:
+- $upload_dir/users/$username/$avatar_image
+
+When nobody is logged in
+========================
+
+Configure who the default (anonymous) user is.
+- in fact, make this non-configurable - call him guest (let that name be restricted).
+
+He should *NOT* have an entry in the user password manager, and in the user database.
+
+To Do
+=====
+set 
+  unsaved-value="null"
+for each id column.
+
+How do U know who the moderators for a given forum are???
+- based on roles
+  - moderators for a given forum, have roles assigned to them.
+    - ie U say. To moderate forum1, U must be in the role forum1_moderator
+- So there must be a servlet filter that enforces security on the forum
+  - for portlets, we'd have to do it a slightly different way.
+    - maybe use delegation???
+
+# request parameters are used for everything in the forum
+  - f = forum id
+  - t = topic id
+  - p = post id
+  - u = user id (this is not necessary)
+  Other parameters have special keys (try to make them single digits)
+
+======
+
+Let phpbb2 also use an init.properties, and then a oxyforum.properties file
+- like in wiki
+
+There's a context param which could override
+- config directory
+- runtime directory
+
+this will allow the config directory and runtime directory to live 
+outside of the webapp, allowing 
+- easier use as a portlet 
+- easier updates to the webapp (clean out directory and refresh)
+(like in wiki)
+
+(done)
+======
+
+When you do a search
+- search on topic title, or on whole topic posts, or on posts
+  - index each post individually
+  - index each topic altogether
+  - index each topic 
+    - store title, author
+- show the following info on the page
+  Topic, Topic Author, Forum, #Replies, #Views, Last Post date
+- search for the thread (topic) which has the 
+
+Use xdoclet to do the hibernate stuff.
+- this way, I only maintain the classes myself.
+
+let encrypted password really encrypt the password.
+
+Integrate jcaptha
+
+====
+
+xdoclet
+
+- use xdoclet
+- compare the output to what is in /tmp/oxyforum
+- call the files 
+  Forum, Topic, Post, User
+
+====
+
+We need to leverage exadel project, so that we can test well.
+
+To do this, copy all the .* files to /tmp/oxyforum.10_22/ (for backup).
+Then make changes, so that the .* files look like the ones from a 
+brand new exadel project.
+
+in .exadelproject,
+  look for WEB-ROOT, WebContent, JavaSource
+
+====
+
+Add all eclipse files in each project, to cvs ...
+
+====
+
+JSF 1.1, Unified EL, Facelets will give me all I want.
+- then I can use c:forEach
+- and do not use tomahawk
+
+
+====
+
+what is the type for date?
+add velocity to forum
+
+
+====
+
+Problems:
+- Facelets does not work well with forms
+  - it exits rendering once the form is completed.
+  - if U need command links in your overall template, you are hosed
+    - since they have to be put in a form
+    - and once U do so, other forms in a client file will not work well
+  - and if U do not put <h:form> in your template, nothing works 
+  - so to fix, use h:outputLink in your template only, and then put 
+    h:form in all your pages
+
+Myfaces wants all your bundles to be loaded from the actual 
+file (not from template.xhtml).
+
+Somehow, the template is cleared when a new page is being loaded.
+- so facelets is not working.
+
+For now, use a template which does not require a form
+- ie U can't use commandLinks in the template.xhtml
+
+====
+
+
+
+we may hit DB in the following phases
+- apply request values (due to conversion)
+- Process validation
+- Update model values
+- Invoke application
+
+So, we really want to do this:
+- since we can stop at any phase
+- closeSession at the end of each phase (if one was created)
+  getCurrentSession(...) will
+    - openSession
+    - beginTransaction
+  closeCurrentSession(...) will
+    - commit transaction
+    - close session
+- all phases are coded to call closeCurrentSession(...) afterPhase
+
+
+====
+
+all action events do this:
+- parse parameters.
+  first parse postid, then topic id, then forumid, then parent forum id
+  - sets all the ones it can set
+
+all forms below act on a Temp forum or Post in memory
+
+prepareEditForum
+- parseParameters
+- set the temp forum as the persistent forum object
+
+prepareEditPost
+- parseParameters
+- set the temp post as the persistent post object
+
+createOrModifyForum
+- parseParameters
+- take the temp forum
+- if forumid is set, then we need to modify the forum
+- else we're creating a new one
+
+createPostWithTopicIfNecessary
+- parseParameters
+- take the temp post
+- if postid is set, then modify the persisted post
+- if topicid is set, then create a new reply
+- if forumid is set, then create a topic, and then the post
+
+parseParameters
+links
+- have their own actions to just parseParameters
+  (and thus set things in the backing bean)
+
+# no need for these ones ... 
+prepareCreateForum
+- parseParameters
+
+prepareReply
+- parseParameters
+
+prepareCreateTopic
+- parseParameters
+
+To edit a forum
+- click page
+  - this will load up the tempforum
+
+===============
+
+I couldn't get inputhidden to work, and cause 
+my model to be updated with its values.
+
+So I have to resort to *not using commandButton* and only
+use commandLink. Luckily, commandLink will go well with 
+images also. (so we're cool).
+
+But I can't do that, 'cos I need the render attribute of the h:... elements.
+
+Note:
+- You always have to initialize your parameters to something.
+- it seems updateModel is only called, if U're comparing against an 
+  non-null model value.
+  i.e. if the model value was null, updateModel is not called.
+- that way, update model will always be called 
+  (because it will see things as having changed).
+
+To allow this, always insert 1 item into each row (ID 1),
+and let that be reserved
+
+Rather, the problem seems to be that,
+- rendered attribute, when used with inputHidden, bombs
+- so don't use rendered attribute on inputHidden
+
+(done)
+
+======
+
+To show a topic
+- for now, do not support pagination (like TSS)
+- create your own tables (use forEach et al) ...
+
+======
+
+UserPreferences might not be necessary ... so let's not do it yet
+
+======
+
+================================================================
+
+Search:
+
+When you do a search
+- search on topic title, or on whole topic posts, or on posts
+  - index each post individually
+  - index each topic altogether
+  - index each topic 
+    - store title, author
+- show the following info on the page
+  Topic, Topic Author, Forum, #Replies, #Views, Last Post date
+- search for the thread (topic) which has the 
+
+Search keys:
+- poster
+- title
+- topic_content
+- topic_last_post_date (upper and lower date bounds)
+
+  - key will have:
+       poster: val
+       title:  val
+       content: val
+       date:    new Date(), new Date() (new Date[2])
+
+When you index - for each document, store:
+- author
+- poster (many)
+- contents of all posts
+- content of all post titles
+- topic_last_post_date 
+
+Results are shown as a table with the following columns
+-  Forum Path | Topic | Author | Answers | Views | Last Post | Score
+   (kinda like view of topic.html)
+ 
+====================
+
+Preferences:
+- We should store what topics folks subscribe to, in the database
+- we should provide a listener interface
+  and an implementation for Email ...
+  This way, when someone subscribes to a topic, he/she gets an email.
+
+CREATE TABLE phpbb_topics_watch (
+  topic_id mediumint(8) UNSIGNED NOT NULL DEFAULT '0',
+  user_id mediumint(8) NOT NULL DEFAULT '0',
+)
+
+A topic has X number of watchers
+A user has X number of Topics he is watching
+- so this is a bi-directional relationship
+
+====================
+
+Then, integrate your wiki in there 
+  - have a single integration java file (making things lightweight).
+
+=====================
+
+Attachments:
+- $uploaddir/users/username/$uploadedFile
+- $uploaddir/net.ugorji.oxygen/forum/topic/$topicId/$attachment
+  
+  $uploaddir = .../$contextPath/$prefix/upload e.g. /oxyforum/p/upload ...
+
+- have an macro for these
+  
+  {file:user|img=true|file=/}
+  {file:topic|img=true|file=/}
+
+===================
+
+# We can't know when someone logs in, 'cos we may not control the login page
+- Add a session listener which keeps track of number of open sessions
+
+===================
+
+StatisticsManager
+- keeps track of number of views of topics
+  - the event listener, listens for views of Topics, and increments the numViews
+  - it has a timer thread, which runs every 5 minutes
+    - it updates DB with topic views, and removes key from map
+  
+WatchManager
+- event listener
+- keeps track of Post Create events, and sends email to the notifiers
+
+Events:
+- Target - Object - (Forum, Topic, Post)
+- Type   - int    - (Create, Read, Edit, Delete)
+
+
+====================
+
+Potential Features:
+- http://www.jforum.net/posts/list/1470.page
+- http://www.dynarch.com/projects/calendar/ (using the calendar)
+
+=====================
+
+Profile information:
+- email
+- yim 
+- aim 
+- msnm
+- locale
+- publicize_email
+- attach_signature ( to posts?)
+- avatar (any arbitrary url ...)
+- signature
+
+Show this profile information on the topic screen.
+
+===================
+
+incr user_posts when someone posts a message.
+
+===================
+
+Make actions to allow user upload files.
+  - from user preferences action screen ...
+
+Make actions to allow folks upload files to topic.
+  - from viewtopic screen
+
+show uploaded files to topic, on the UI ...
+  - on viewtopic screen
+
+show uploaded files of user on the UI ...
+  - Name, Size, date
+
+ForumViewAction     userprefsform.html  userprefsform
+UserPrefsAction     -                   userprefs
+UploadFileAction    -                   uploadfile
+
+# UploadFileAction takes parameters like
+  - upload.subpath  = users/$username OR net.ugorji.oxygen/forum/topic/$topicId
+  - upload.nextview = userprefsform | topic
+
+show the number of open sessions on the forum ...
+
+====================
+
+It seems that WebFileUpload is broken ... fix it ...
+- on parseRequest, it always returns an empty list
+
+
+Note that:
+- attachments must not be put under the /p area
+  - since that is handled by the forum servlet ...
+
+Attachments go under $contextPath/upload
+Other resources go under $contextPath/oxyforum/
+======================
+
+UserPreferences needs to be tested ...
+
+======================
+
+Have a way to index just since last time an index was done.
+- A new action
+- it figures out all topics which have their last post date after the 
+  last index date, and re-indexes all those
+
+To do this, we need a random table that store key-value.
+
+oxyforum_misc_info
+  - key(string) | value(string)
+  e.g. last_index_datetime = 100004403323
+  
+(do not do this)
+- we will add to the index each time a post is created (but not edited).
+
+- So what we do, is incremental updates
+  - every night, we will update the index
+  - then search will find the latest updates
+  - use a thread for this.
+
+======================
+
+U should allow
+  - a post will have a parent post
+  - at the top of a topic, the thread is shown, with hyperlinks to all the posts
+  - each post has a permalink (which just shows it in isolation)
+  - the posts are shown in chronological order 
+  - U can link from a post to the position in the thread
+  - U can link from the thread to the position of the details
+  - 
+
+To do this:
+- there is a macro which can display a post
+  - it takes indentLevel, Post
+- Topic has a method called: getFirstPost
+  - the firstPost never has a parent
+  - all posts are children of either first post, or other posts
+- Post has a method called:  getChildPosts(), getParentPost()
+- 
+
+==========================
+
+Add the incremental index as a time based action
+
+===========================
+
+Add the ability to prune
+
+===========================
+
+Why is the numbers showing wrong??? e.g. for prune_days
+- something with the mysql numbers
+
+===========================
+
+Figure out UI to lock/unlock a topic
+- have a specific action for editing a topic
+  - all it changes is the status
+===========================
+
+order by
+  - type,
+  - where status != LOCKED
+
+show type in the listing ...
+
+===========================
+
+Ensure folks cannot post to a topic, if it is locked, or its forum is locked,
+Ensure folks cannot create a new topic, it its forum is locked.
+
+===========================
+
+Special Styles:
+- oxyforum-parentrow
+- emulate the L&F of phpBB 
+  - their styles and colors
+
+Last post doesn't show???
+(done)
+
+===========================
+
+Remember to call indexer, whenever U delete a topic
+
+for indexing
+- delete all at once
+- reindex all at once
+
+(done)
+===========================
+
+Let forms leverage the ForumConstants when they need to.
+All constants they need are there.
+
+=====================
+
+Anonymous emails:
+- we have an email address, and a random algorithm,
+  to take an email address and get an anonymous one out of it.
+  E.g. take a@b.com, convert to a-b@ugorji.com, ...
+
+=====================
+
+Templates:
+- store template files in
+
+TemplateHandler
+- reads the ForumConfig
+- gets the name of the template
+- finds the files from net.ugorji.oxygen/forum/templates/$templateName
+
+A templates files are stored in
+  - WEB-INF/classes/net.ugorji.oxygen/forum/templates/$templateName/*.html
+  - oxyforum/templates/$templateName/...
+  
+E.g. default template will use
+  WEB-INF/classes/net.ugorji.oxygen/forum/templates/default/*.html
+  oxyforum/templates/default/...
+
+# U just have to specify the template name in the forum config.
+
+====================
+
+Subscribing | unsubscribing
+  (allow user unsubscribe from topic)
+
+========================
+
+On the left of topic view, show (if defined):
+- Name
+- Avatar
+- Joined when
+- # posts
+- Location
+
+show website on the right ...
+
+Joined: 03 Jul 2002
+Posts: 4700
+Location: Toronto, Canada
+
+=====================
+
+Userprefs (maintain the forum U were on)
+(so add the id there)
+
+=======================
+
+handle viewing a topic
+- when a topic is viewed, generate an event which is
+  - Topic, READ
+  (do this for all the processAction ones, and topic render one)
+
+=======================
+
+Add the listener which sends an email to all users watching a topic
+(like the emails sent to us at work for tomcat)
+
+Send the email to everyone at once.
+- (later, change it to bcc everyone, and only send to a do-not-store mailbox)
+
+=======================
+
+Ensure website is in the userprofile
+
+=========================
+
+Let's allow the ability to default to a certain template location
+- allow templates be found from a given place
+
+=========================
+
+Q: should sets in hibernate be loaded by default (ie have lazy=false???)
+   it should all be lazy by default
+
+=========================
+
+change logic to do subscribe and unsubscribe
+- let an entity represent the watch topics table
+- be able to find it, and remove it easily
+
+  dao.watchTopic(User u, Topic t, boolean yesorno)
+  
+   mysql.sql should have an id for topic watcher
+   class for TopicWatch entity
+   no-one calls getUsersWatching or getWatchedTopics (except the email guy)
+
+=========================
+
+does hibernate need all those 3rd party jars (asm, cglib, etc)
+- or can it do without those ...
+
+=========================
+
+Put cancel buttons on all forms
+
+=========================
+Add this to the template
+
+  - with some javascript, which basically says
+    - take the form
+    - change it's target
+    - submit it
+
+
+onClick='document.$formName.action="";document.$formName.submit();'
+
+=========================
+
+Clean up topic view UI:
+- show the thread in a table
+  Title Author Date/Time
+- put a line in blue background at the top of a thread, which shows like those info (so the line is differentiating a new post) 
+  oxyforum-post-metadata-top
+  oxyforum-post-metadata-bottom
+- do not alternate colors
+
+======================
+
+Security:
+- no-one can post to a locked forum/topic
+- etc etc etc
+
+=================
+
+Support quoting
+- a quote parameter to the reply action.
+- It will put the user's whole text in a blockquote ...
+  ```   ```
+
+
+=================
+
+Create a user guide
+
+=================
+
+Ensure text is wiki-parseable before writing it
+if error in parsing wiki, just type a "Text cannot be parsed" message
+
+=================
+
+figure out how to do the threaded tree, without so many queries
+- maybe have one query which returns children sorted by parentpostid, postid??? (no ... its hard)
+  - we'd 
+
+=================
+
+put an error page in there
+
+=================
+
+Put security, so users have to be in specific roles to do some actions
+- admin role is defined in 
+- manager role is defined: admin can do the following: edit, 
+
+=================
+
+Intl login.html and error.html files.
+
+=================
+
+user listing
+- username | location | website | contacts (email, IM)
+
+No concept of a moderator of a forum
+- admin has full power
+
+userprofile
+- show #posts, location
+
+admin of overall engine
+- can do anything a moderator can do (and more)
+
+moderator of a forum
+- can lock/unlock the forum, or topics in it
+
+how d'U know if a user is a moderator of a given forum???
+- forum moderators table: 2 columns: user_id, forum_id
+
+whatz the UI to set a user as a moderator
+- on edit forum, there's a textfield to set moderators 
+  (U just type the usernames)
+- username must be unique in the DB
+
+banning users is not supported at the forum/topic level
+- so moderator cannot do it yet
+
+recent topics
+- change period is configurable
+- show topics changed in last week (configurable)
+- 
+
+search is broken
+- U should be able to search for topics changed recently
+
+(recent topics link is a link to a search)
+
+configure max search results number (done)
+
+recent topics link is to:
+- searchresults?TOPIC_LAST_POST_DATE.0=MM/dd/yyyy
+
+(get recent topics date)
+
+====================
+
+You do not want to auto-link to yahoo, etc
+- instead, just show a link to the user's profile, and a link to their email
+- if they want anything else, they'd put it in their signature
+
+email link is under the username
+
+userprofile.html, userlist.html, topic.html
+yahoo: , AOL: , MSNM: 
+
+http://wwp.icq.com/scripts/search.dll?to=301398006
+aim:goim?screenname=ayksupport&message=Hello+Are+you+there?
+
+=====================
+
+userprefs form should allow user set
+- default topic view :
+- show message thread
+
+=====================
+
+do input checking (to ensure that bad data does not go into the system)
+- examine all forms which submit ...
+
+=====================
+
+Handle locked posts, topics, etc.
+- U cannot post to a locked topic (reply, etc)
+  - except U're in the admin role
+  - postform, post
+- U cannot post to a locked forum
+  - except U're in the admin role
+
+=================
+
+BaseForumModel
+- allowCreateTopic()
+- allowPostToTopic()
+
+=================
+
+Recent Topics is broken
+
+=====================
+
+pagination (very important, especially as more and more topics get posted to the system)
+- list of topics in a forum
+- list of users in the db
+  
+
+=====================
+
+when any of the userpref, etc are loaded,
+- pass a subset of the properties object
+
+======================
+
+Preview on the postform screen
+- call save() before saving
+- add an edit link on the forum
+
+Preview on postform screen
+- use Ajax.update
+- call an action which returns, in the body, the wiki markup (or the body or the contents of the error page)
+- 
+
+(this means, that the Ajax stuff, will be in the template)
+
+======================
+
+Seems wiki markup is not working for links (e.g. [a b | a/b]
+- we need to correctly implement the do_link for the forum
+- 
+======================
+
+Recalculate persisted statistics
+--------------------------------
+oxyforum_forum
+  forum_posts mediumint(8)
+  forum_topics mediumint(8)
+  forum_last_post_id
+
+oxyforum_user
+  user_posts
+
+Assume:
+- Posts are never deleted if the Topic is still alive. 
+  Instead, their content is changed to maybe an empty string.
+- This means 
+  - first post of a topic can never change,
+  - last post of a topic can never disappear.
+
+Forum
+- make an action that will reset the collected report for the forum
+- On pruning, we reset the statistics
+- 
+(done)
+=================================
+
+Have a config parameter, which says to run 
+- "incremental index" at startup.
+- recalculate statistics at startup.
+(done)
+
+=================================
+Make a second template, only changing the topic.html
+- this is called spartan
+(done)
+
+=================================
+How to handle avatars
+- U know what. We'd always show the image as 16*16.
+- make a different view for the topic.html, which is very spartan-like.
+  - like what is in digg.com
+
+=================================
+Have an action that just lists every forum.
+- The first row shows |_ (and so on, but indented)
+- There's no expand column
+- A template can then decide on the action to show.
+
+Either that, or:
+- change the look of the forums.html page.
+- It's really ugly'ish
+
+=================================
+Start writing help for the forum
+- wiki format
+
+==============
+
+- When quoting, remove all tags which suggest a quote.
+- Allow a quote to have a topic
+  - e.g. Quote from 'user' on 'date' (while in forum)
+Quote Macro should take a subject parameter
+  - so that it can be at the top
+(done)
+

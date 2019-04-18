@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-reverse-engineering PUBLIC "-//Hibernate/Hibernate Reverse Engineering DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-reverse-engineering-3.0.dtd" >
+
+<hibernate-reverse-engineering>
+  <type-mapping>
+    <sql-type jdbc-type="TINYINT"  precision="1" hibernate-type="boolean" /> 
+    <sql-type jdbc-type="TINYINT"  hibernate-type="integer" /> 
+    <sql-type jdbc-type="SMALLINT" hibernate-type="integer" /> 
+    <sql-type jdbc-type="INTEGER"  hibernate-type="integer" /> 
+    <sql-type jdbc-type="BIGINT"   hibernate-type="long" /> 
+  </type-mapping>
+	
+</hibernate-reverse-engineering>
+
+<!-- jdbc-type is name fom java.sql.Types -->
+<!-- hibernate type is from http://www.hibernate.org/hib_docs/v3/reference/en/html/mapping.html#mapping-types -->
+<!-- length, scale and precision can be used to specify the mapping precisly -->
+<!-- the type-mappings are ordered. This mapping will be consulted last, thus overriden by the previous one if precision=1 for the column -->

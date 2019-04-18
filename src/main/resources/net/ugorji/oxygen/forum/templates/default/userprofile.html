@@ -1,0 +1,67 @@
+<#assign v3=t.getUser() >
+<#assign v4=v3.getName() >
+<div class="oxyforum-form-table">
+<table>
+<thead>
+<th>${t.i18n("user_profile_avatar")}</th>
+<th colspan="2">${t.i18n("user_profile")}</th>
+</thead>
+<tr>
+<td rowspan="15">
+  <#if (t.getUserpref(v4, "avatar")?has_content)>
+    <img src="${t.getUserpref(v4, "avatar")}" width="80" height="80" border="0" align="left" valign="top" />
+  </#if>
+</td>
+<td>${t.i18n("userprefs_avatar")}</td>
+<td class="oxyforum-col-primary"><#if (t.getUserpref(v4, "avatar")?has_content)><a href="${t.getUserpref(v4, "avatar")}">${t.getUserpref(v4, "avatar")}</a></#if></td>
+</tr>
+<tr>
+<td><nobr>${t.i18n("userprefs_username")}</nobr></td>
+<td>${v4}</td>
+</tr>
+<tr>
+<td><nobr>${t.i18n("userprefs_num_posts")}</nobr></td>
+<td>${t.stats().getNumPostsForUser(v3.getId())}</td>
+</tr>
+<tr>
+<td><nobr>${t.i18n("userprefs_email")}</nobr></td>
+<td><#if (t.getUserpref(v4, "email")?has_content)><a href="mailto:${t.getUserpref(v4, "email")}">${t.getUserpref(v4, "email")}</a> </#if></td>
+</tr>
+<tr>
+<td><nobr>${t.i18n("userprefs_location")}</nobr></td>
+<td><#if (t.getUserpref(v4, "location")?has_content)>${t.getUserpref(v4, "location")} </#if></td>
+</tr>
+<tr>
+<td><nobr>${t.i18n("userprefs_website")}</nobr></td>
+<td><#if (t.getUserpref(v4, "website")?has_content)><a href="${t.getUserpref(v4, "website")}">${t.getUserpref(v4, "website")}</a> </#if></td>
+</tr>
+<tr>
+<td><nobr>${t.i18n("userprefs_yim")}</nobr></td>
+<td><#if (t.getUserpref(v4, "yim")?has_content)><a href="ymsgr:sendim?${t.getUserpref(v4, "yim")}">${t.getUserpref(v4, "yim")}</a> </#if>
+</tr>
+<tr>
+<td><nobr>${t.i18n("userprefs_aim")}</nobr></td>
+<td><#if (t.getUserpref(v4, "aim")?has_content)><a href="aim:goim?screenname=${t.getUserpref(v4, "aim")}">${t.getUserpref(v4, "aim")}</a> </#if>
+</tr>
+<tr>
+<td><nobr>${t.i18n("userprefs_msnm")}</nobr></td>
+<td><#if (t.getUserpref(v4, "msnm")?has_content)>${t.getUserpref(v4, "msnm")} </#if>
+</tr>
+<tr>
+<td><nobr>${t.i18n("userprefs_locale")}</nobr></td>
+<td>${t.getUserpref(v4, "locale", "")}</td>
+</tr>
+<tr>
+<td><nobr>${t.i18n("userprefs_publicize_email")}</nobr></td>
+<td>${t.getBooleanUserpref(v4, "publicize_email")?string("yes", "no")}</td>
+</tr>
+<tr>
+<td><nobr>${t.i18n("userprefs_attach_signature")}</nobr></td>
+<td>${t.getBooleanUserpref(v4, "attach_signature")?string("yes", "no")}</td>
+</tr>
+<tr>
+<td><nobr>${t.i18n("userprefs_signature")}</nobr></td>
+<td>${t.getUserpref(v4, "signature", "")}</td>
+</tr>
+</table>
+</div>

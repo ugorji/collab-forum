@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+                                 http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
+             version="1.0">
+  <persistence-unit name="oxyforum" transaction-type="RESOURCE_LOCAL">
+    <!-- <provider>org.hibernate.ejb.HibernatePersistence</provider> -->
+    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+    <!-- add for tomcat, rm for WLS, jetty:     java:/comp/env/     -->
+    <!-- <jta-data-source>jdbc/OxyForumDataSource</jta-data-source> -->
+    <non-jta-data-source>jdbc/OxyForumDataSource</non-jta-data-source>
+    <class>net.ugorji.oxygen.forum.data.ForumEntity</class>
+    <class>net.ugorji.oxygen.forum.data.DataEntity</class>
+    <class>net.ugorji.oxygen.forum.data.PostEntity</class>
+    <class>net.ugorji.oxygen.forum.data.User</class>
+    <class>net.ugorji.oxygen.forum.data.Forum</class>
+    <class>net.ugorji.oxygen.forum.data.Post</class>
+    <class>net.ugorji.oxygen.forum.data.Topic</class>
+    <class>net.ugorji.oxygen.forum.data.Misc</class>
+    <properties>
+    </properties>
+  </persistence-unit>
+</persistence>
+

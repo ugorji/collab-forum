@@ -1,0 +1,76 @@
+== HELP ...
+
+{a:toc/}
+=== Table Of Contents
+# Introduction
+# Installation
+# Configuration
+# Administration
+  # Creating Forum
+# Using 
+  # Creating Topic
+  # Posting
+  # Searching
+  # Subscribe to Topics
+# User Preferences
+
+{a:intro/}
+=== Introduction
+Oxygen Forum was written because of a lack of Forum Engines which
+* Leveraged the J2EE Web Container features like 
+  * Data Sources
+* Could be dropped in as a portlet
+* Uses the database for its primary use ie storing data
+  * ~~ Not for searching, etc ~~
+* Allows a pluggable way of handling groups, users, etc
+  * ~~ Most only allowed you to store users/groups/permissions in the database ~~
+
+=== Installation
+
+The oxyforum distribution is pre-configured for a seamless installation. To do this:
+ # Download the distribution (oxyforum.war OR oxyforum-no-lib-jars.zip). This contains
+   * README.txt (this file)
+   * Contents of the web application 
+   * ~~ If oxyforum.war, it also contains all dependent lib jars in WEB-INF/lib/ ~~
+ # Unzip it into a directory
+ # ~~ If you downloaded oxyforum.war, skip this step. ~~ \\ \
+   Download the third party jars which oxyforum depends on. Put them in the WEB-INF/lib directory \
+   after unzipping the zip archive, or on the classpath of your server (so it can be shared with other applications). These are
+   * Mandatory
+     # oxy-jdk-extensions.jar
+     # oxy-common.jar
+     # oxy-markup.jar
+     # oxy-forum-classes.jar
+     # oxy-forum-resources.jar
+     # commons-logging.jar,
+     # commons-fileupload.jar, (1.1 has a bad bug, causing all filenames to be lowercase)
+     # commons-io.jar
+     # lucene-core.jar,
+     # freemarker.jar,
+     # org.suigeneris.jrcs.diff.jar
+     # hibernate.jar
+     # antlr.jar (required by hibernate)
+     # asm.jar (required by hibernate)
+     # asm-attrs.jar (required by hibernate)
+     # cglib.jar (required by hibernate)
+     # dom4j.jar (required by hibernate)
+     # jta.jar (required by hibernate)
+     # ehcache.jar (required by hibernate, and if using ehcache as markup caching provider.)
+   * Optional
+     # radeox_base.jar (only if leveraging radeox macros)
+     # bsf.jar (only if using the script macro - some people disable this for security reasons)
+     # bsh.jar (only if using the script macro - and leveraging beanshell as your scripting engine)
+     # jhlabs-imaging.jar (only if using captcha, to prevent spam, and ensure humans post entries to the forum)
+     # rome.jar (only if using rss macro)
+     # jdom.jar (only if using rss macro - rss macro uses rome.jar which internally uses jdom.jar)
+ # Deploy the directory to your web application server (e.g. tomcat, resin, weblogic, websphere)
+   * e.g. deploy with the context-path /oxyforum onto ``http://localhost:7001``
+ # Look up the startup page
+   * in example above, it is ``http://localhost:7001/oxyforum/``
+
+=== Configuration
+
+=== Administration
+
+=== FAQ
+

@@ -1,0 +1,81 @@
+<form action="${t.getURL("userprefs")}" method="post">
+<#assign v0=t.getForumEngine().getUserPreferencesManager() >
+<#assign v1=t.getUserName() >
+<input type="hidden" name="allow_username_edit" value="${t.isUsernameOverrideAllowed()?string("true", "false")}" /> 
+<div class="oxyforum-form-table">
+<table>
+<thead>
+<th colspan="2">${t.i18n("userprefs")}</th>
+</thead>
+<tr>
+<td>${t.i18n("userprefs_username")}</td>
+<td><input type="text" size="80" name="username" value="${v1}" <#if !(t.isUsernameOverrideAllowed())> disabled="true" readonly="true" </#if> /></td>
+</tr>
+<tr>
+<td>${t.i18n("userprefs_avatar")}</td>
+<td><input type="text" size="80" name="forum.avatar" value="${t.getUserpref(v1, "avatar", "")}" /></td>
+</tr>
+<tr>
+<td>${t.i18n("userprefs_email")}</td>
+<td><input type="text" size="80" name="forum.email" value="${t.getUserpref(v1, "email", "")}" /></td>
+</tr>
+<tr>
+<td>${t.i18n("userprefs_location")}</td>
+<td><input type="text" size="80" name="forum.location" value="${t.getUserpref(v1, "location", "")}" /></td>
+</tr>
+<tr>
+<td>${t.i18n("userprefs_website")}</td>
+<td><input type="text" size="80" name="forum.website" value="${t.getUserpref(v1, "website", "")}" /></td>
+</tr>
+<tr>
+<td>${t.i18n("userprefs_yim")}</td>
+<td><input type="text" size="80" name="forum.yim" value="${t.getUserpref(v1, "yim", "")}" /></td>
+</tr>
+<tr>
+<td>${t.i18n("userprefs_aim")}</td>
+<td><input type="text" size="80" name="forum.aim" value="${t.getUserpref(v1, "aim", "")}" /></td>
+</tr>
+<tr>
+<td>${t.i18n("userprefs_msnm")}</td>
+<td><input type="text" size="80" name="forum.msnm" value="${t.getUserpref(v1, "msnm", "")}" /></td>
+</tr>
+<tr>
+<td>${t.i18n("userprefs_locale")}</td>
+<td><input type="text" size="80" name="forum.locale" value="${t.getUserpref(v1, "locale", "")}" /></td>
+</tr>
+<tr>
+<td>${t.i18n("userprefs_publicize_email")}</td>
+<td><input type="checkbox" name="forum.publicize_email" value="true" ${t.getBooleanUserpref(v1, "publicize_email")?string("checked", "")} /></td>
+</tr>
+<tr>
+<td>${t.i18n("userprefs_attach_signature")}</td>
+<td><input type="checkbox" name="forum.attach_signature" value="true" ${t.getBooleanUserpref(v1, "attach_signature")?string("checked", "")} /></td>
+</tr>
+<tr>
+<td>${t.i18n("userprefs_show_message_thread")}</td>
+<td><input type="checkbox" name="forum.forum.show_message_thread" value="true" ${t.getBooleanUserpref(v1, "forum.show_message_thread")?string("checked", "")} /></td>
+</tr>
+<tr>
+<td>${t.i18n("userprefs_topic_view")}</td>
+<td>
+  <input type="checkbox" name="forum.forum.topic_view" value="chronological" ${(t.getUserpref(v1, "forum.topic_view", "") == "chronological")?string("checked", "")} /> ${t.i18n("topic_chronological_view")}
+  <input type="checkbox" name="forum.forum.topic_view" value="thread" ${(t.getUserpref(v1, "forum.topic_view", "") == "thread")?string("checked", "")} /> ${t.i18n("topic_thread_view")}
+</td>
+</tr>
+<tr>
+<td>${t.i18n("userprefs_signature")}</td>
+<td><textarea name="forum.signature" cols="80" rows="10" >${t.getUserpref(v1, "signature", "")}</textarea></td>
+</tr>
+<tr>
+<td colspan="2"><input type="submit" name="k" value="${t.i18n("submit")}" /></td>
+</tr>
+</table>
+</div>
+</form>
+
+<#assign v_attachment_sub_path="net.ugorji.oxygen/users/${t.getUserName()}/" >
+<#assign v_attachment_next_view="userprefsform" >
+<#assign v_attachment_context="${t.getUserName()}" >
+
+<#include "snip_attachments.html" parse="true" >
+

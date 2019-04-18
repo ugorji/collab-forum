@@ -1,0 +1,38 @@
+<h1>${t.getConfigProperty("net.ugorji.oxygen.forum.title")}</h1>
+<p/>
+
+<#assign vforum=t.getForum() >
+<div class="oxyforum-lineage">
+|
+<a href="${t.getURL("admin")}">${t.i18n("admin_text")}</a> |
+<a href="${t.getURL("allforums")}">${t.i18n("allforums_text")}</a> | 
+<a href="${t.getURL("forums")}">${t.i18n("forums_text")}</a> |
+<a href="${t.getURL("searchform")}">${t.i18n("search_text")}</a> |
+<a href="${t.getURL("userprefsform")}">${t.i18n("userprefs_text")}</a> |
+<#assign vtArgMaps={"TOPIC_LAST_POST_DATE.0":t.getRecentTopicsFromDateAsString()} >
+<a href="${t.getURL("searchresults", vtArgMaps)}">${t.i18n("recent_topics_text")}</a> | 
+<a href="${t.getURL("rss", vtArgMaps)}">${t.i18n("rss_text")}</a> | 
+<a href="${t.getURL("userlist")}">${t.i18n("userlist_text")}</a> |
+<a href="${t.getURL("help")}">${t.i18n("help_text")}</a> |
+<#if t.showLogoutLink()><a href="${t.getURL("logout")}">${t.i18n("logout_text")}</a> | </#if>
+</div>
+
+<p/>
+
+<div class="oxyforum-lineage">
+${t.i18n("lineage")}
+<#list t.getLineage(vforum) as x>
+  <a href="${t.getURL(t.getLineageAction(), x.getId())}">${x.getName()}</a>
+  <#if x_has_next>&gt;&gt;</#if> 
+</#list>  
+<#if t.getLineageTopic()?exists>
+  <b>
+  &gt;&gt;&gt;&gt;
+  <a href="${t.getURL("topic", t.getLineageTopic().getId())}">${t.getLineageTopic().getTitle()}</a>
+  </b>
+</#if>
+</div>
+
+<#include "snip_macros.html" parse="true">
+<#include "${t.getAction()}.html" parse="true">
+

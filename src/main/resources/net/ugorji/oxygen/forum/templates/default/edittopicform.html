@@ -1,0 +1,35 @@
+<#assign vtopic=t.getTopic() >
+<form action="${t.getURL("edittopic", vtopic.getId())}">
+<input type="hidden" name="topicid" value="${vtopic.getId()?c}" />
+<div class="oxyforum-form-table">
+<table>
+  <tr>
+    <th colspan="2">${t.i18n("edit_post_page_header")}</th>
+  </tr>
+  <tr>
+    <td>${t.i18n("post_subject")}</td>
+    <td><input type="text" size="80" name="title" value="${vtopic.getTitle()}" /></td>
+  </tr>
+  <tr>
+    <td>${t.i18n("forum_flags")}</td>
+    <td>
+      <input id="editforum_write" type="checkbox" name="write" value="true" ${vtopic.isWrite()?string("checked", "")}/>
+      <label for="editforum_write">${t.i18n("fprum_write")}</label>
+      <input id="editforum_read" type="checkbox" name="read" value="true" ${vtopic.isRead()?string("checked", "")}/>
+      <label for="editforum_read">${t.i18n("forum_read")}</label>
+      <input id="editforum_high_visibility" type="checkbox" name="highvisibility" value="true" ${vtopic.isHighvisibility()?string("checked", "")}/>
+      <label for="editforum_high_visibility">${t.i18n("forum_high_visibility")}</label>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <input type="submit" value="${t.i18n("update")}" />
+      <input type="reset" value="${t.i18n("reset")}" />
+      <input type="button" value="${t.i18n("cancel")}" onClick="location.href='${t.getURL("topic", vtopic.getId() )}'" />
+    </td>
+  </tr>
+</table>
+</div>
+
+</form>
+

@@ -1,0 +1,36 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Oxygen Forum</title>
+<link rel="stylesheet" href="${t.getContextPath()}/stylesheets/stylesheet.css" />
+<link rel="stylesheet" href="${t.getContextPath()}/stylesheets/oxywiki.css" />
+<link rel="stylesheet" href="${t.getContextPath()}/stylesheets/oxyforum.css" />
+<script LANGUAGE="JavaScript" SRC="${t.getContextPath()}/util/prototype.js" ></script>
+<script LANGUAGE="JavaScript" SRC="${t.getContextPath()}/util/js-common.js" ></script>
+<script LANGUAGE="JavaScript">
+<!--
+  function oxyforum_blah() {
+    //alert("hi");
+  }
+  function oxyforum_reload_current_page() {
+    location.href = '${t.getCurrentURL()}';
+  } 
+// -->
+</script>
+
+</head>
+
+<body class="oxyforum-body">
+<#include "template_body.html" parse="true">
+
+<p/>
+
+<div class="oxy-credits">
+${t.i18n("credits")}. <a href="${t.getURL("about")}">${t.i18n("oxyforum_powered")}</a>. 
+&copy; <a href="http://www.oxygensoftwarelibrary.com/">oxygensoftwarelibrary.com</a>
+</div>
+
+</body>
+
+</html>
+

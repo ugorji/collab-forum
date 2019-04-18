@@ -1,0 +1,10 @@
+
+<#-- put macros here -->
+
+<#macro forumTreeAsSelectOptions vindent vforum vselectedid>
+  <option value="${vforum.getId()?c}" <#if (vforum.getId() == vselectedid)>selected</#if> ><#list 1..vindent as v99> &nbsp; &nbsp; </#list> &#149; ${vforum.getName()}</option>
+  <#list vforum.getChildForums() as v3>
+    <@forumTreeAsSelectOptions vindent=vindent+1 vforum=v3 vselectedid=vselectedid/>
+  </#list>
+</#macro>
+

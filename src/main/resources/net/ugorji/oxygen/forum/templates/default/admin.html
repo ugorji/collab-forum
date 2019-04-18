@@ -1,0 +1,21 @@
+<#assign v0={"all":"true"}>
+<#assign v1={"incremental":"true"}>
+
+<script LANGUAGE="JavaScript">
+<!--
+  function oxyforum_togglelongtermlock() {
+    //alert('hello there');
+    var oxyAjax = new Ajax.Request('${t.getURL("togglelongtermlock")}', {method: 'get', onComplete: oxyforum_reload_current_page });
+  } 
+// -->
+</script>
+
+<ul>
+  <li><a href="javascript:oxyforum_togglelongtermlock();">${t.i18n("action_lock_engine")} &plusmn; </a> <br/>
+  ${t.i18n("description_lock_engine", t.isEngineLocked()?string)}</li>
+  <li><a href="${t.getURL("manageforums")}">${t.i18n("manage_forums")}</a></li>
+  <li><a href="${t.getURL("recalculatestatistics")}">${t.i18n("recalculate_statistics")}</a></li>
+  <li><a href="${t.getURL("indexing", v0)}">${t.i18n("create_index")}</a></li>
+  <li><a href="${t.getURL("indexing", v1)}">${t.i18n("incremental_index")}</a></li>
+</ul>     
+

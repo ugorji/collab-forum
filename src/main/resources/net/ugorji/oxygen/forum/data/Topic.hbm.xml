@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="net.ugorji.oxygen.forum.data.Topic" table="oxyforum_topic">
+    <cache usage="nonstrict-read-write" />
+
+    <id name="id" column="topic_id" type="long">
+      <generator class="identity"/>
+    </id>
+
+    <property name="numReplies" type="integer" update="true"
+      insert="true" column="topic_replies" not-null="true" />
+
+    <property name="numViews" type="integer" update="true" insert="true"
+      column="topic_views" not-null="true" />
+
+    <property name="status" type="integer" update="true" insert="true"
+      column="topic_status" not-null="true" />
+
+    <property name="date" type="timestamp" update="true" insert="true"
+      column="topic_date" not-null="false" />
+
+    <property name="title" type="string" update="true" insert="true"
+      column="topic_title" not-null="true" />
+
+    <property name="type" type="integer" update="true" insert="true"
+      column="topic_type" not-null="true" />
+
+    <many-to-one name="author" class="net.ugorji.oxygen.forum.data.User"
+      cascade="none" outer-join="auto" update="true" insert="true"
+      column="topic_poster_id" />
+
+    <many-to-one name="forum" class="net.ugorji.oxygen.forum.data.Forum"
+      cascade="none" outer-join="auto" update="true" insert="true"
+      column="forum_id" />
+
+    <many-to-one name="firstPost" class="net.ugorji.oxygen.forum.data.Post"
+      cascade="none" outer-join="auto" update="true" insert="true"
+      column="topic_first_post_id" />
+
+    <many-to-one name="lastPost" class="net.ugorji.oxygen.forum.data.Post"
+      cascade="none" outer-join="auto" update="true" insert="true"
+      column="topic_last_post_id" />
+
+    <set name="posts" inverse="true" cascade="none"
+      sort="unsorted" order-by="post_id" >
+      <cache usage="nonstrict-read-write" />
+      <key column="topic_id" />
+      <one-to-many class="net.ugorji.oxygen.forum.data.Post" />
+    </set>
+
+    <set name="usersWatching" table="oxyforum_topic_watch" 
+      inverse="true" cascade="none" sort="unsorted" >
+      <cache usage="nonstrict-read-write" />
+      <key column="topic_id" />
+      <many-to-many class="net.ugorji.oxygen.forum.data.User" column="user_id"
+        outer-join="auto" />
+    </set>
+
+  </class>
+
+</hibernate-mapping>

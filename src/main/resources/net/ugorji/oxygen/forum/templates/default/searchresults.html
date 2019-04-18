@@ -1,0 +1,25 @@
+
+<table>
+  <tr>
+    <th colspan="7">${t.i18n("search_results")}</th>
+  </tr>
+  <tr>
+    <th>${t.i18n("search_score")}</th>
+    <th>${t.i18n("forum")}</th>
+    <th>${t.i18n("topic")}</th>
+    <th>${t.i18n("replies")}</th>
+    <th>${t.i18n("views")}</th>
+    <th>${t.i18n("author")}</th>
+    <th>${t.i18n("last_post")}</th>
+  </tr>
+  <#list searchresults.getTopics() as x>
+    <td>${searchresults.getScore(x)}</td>
+    <td><a href="${t.getURL("forum", x.getForum().getId())}">${t.getAbsoluteName(x.getForum())}</a></td>
+    <td><a href="${t.getURL("topic", x.getId())}">${x.getTitle()}</a></td>
+    <td>${t.stats().getNumViewsForTopic(x.getId())}</td>
+    <td>${t.stats().getNumRepliesForTopic(x.getId())}</td>
+    <td>${x.getAuthor().getName()}</td>
+    <td><#if !(t.getLastPost(x)?exists)>${t.getLastPost(x).getDate()?date} ${t.i18n("by")} ${t.getLastPost(x).getAuthor().getName()}</#if></td>
+  </tr>
+  </#list>
+</table>

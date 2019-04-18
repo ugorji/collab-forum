@@ -1,0 +1,94 @@
+plugins {
+    id 'war'
+    id 'org.gretty' version '2.2.0'
+}
+
+configurations {
+    enhancerTask
+    enhancerRun
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    // runtimeOnly project(':web-common')
+
+    implementation project(':java-common'),
+        project(':java-markup'),
+        project(':java-web'),
+        project(':web-common')
+
+    implementation 'javax.persistence:javax.persistence-api:2.2',
+        'commons-logging:commons-logging:1.2',
+        'org.apache.lucene:lucene-core:2.9.4',
+        'javax.servlet:javax.servlet-api:4.0.1',
+        'javax.portlet:portlet-api:3.0.1',
+        'org.apache.openjpa:openjpa:3.0.0',
+        //'org.apache.openjpa:openjpa:2.4.3',
+        'net.sourceforge.serp:serp:1.15.1',
+        'jca:jca:1.5',
+        //'mysql:mysql-connector-java:8.0.15',
+        'com.kenai.nbpwr:com-sun-syndication-feed:1.0-201002241208'
+
+    // enhancer depends on META-INF/persistence.xml, built classes and java-common classes
+    enhancerTask 'org.apache.openjpa:openjpa:3.0.0'
+    enhancerRun 'org.apache.openjpa:openjpa:3.0.0',
+        files('src/main/resources/',
+              'build/classes/java/main/',
+              new File(project(':java-common').buildDir, "classes/java/main"))
+    //'../java-common/build/classes/java/main/')
+    
+    gretty 'mysql:mysql-connector-java:8.0.15'
+}
+
+war {
+    with copySpec {
+        from new File(project(':web-common').projectDir, 'src/main/webapp')
+        // from '' + project(':web-common').projectDir + '/src/main/webapp'
+        // from (zipTree(new File(project(':web-common').buildDir, "libs/web-common.war"))) {
+        //     exclude 'META--INF/*', 'WEB-INF/web*.xml'
+        // }
+    }
+}
+
+gretty {
+    servletContainer = "jetty9"
+    scanInterval = 0
+    //jvmArgs = ["-javaagent:${projectDir}/build/collab-app/config/openjpa-3.0.0.jar"]
+    realm 'oxyforum'
+    realmConfigFile "${projectDir}/build/collab-app/config/jetty-realm.properties"
+    classPath "${projectDir}/build/collab-app/config"
+    contextConfigFile = "${projectDir}/build/collab-app/config/jetty-mysql-datasource.xml"
+}
+
+
+task copyConfig(type: Copy) {
+    doFirst {
+        mkdir "$buildDir/collab-app/config"
+    }
+    from "${projectDir}/src/config"
+    into "$buildDir/collab-app/config"
+}
+
+task enhanceJPA {
+    //println configurations.enhancerRun.asPath
+    doLast {
+        ant.taskdef(name: 'openjpac',
+                    classname: 'org.apache.openjpa.ant.PCEnhancerTask',
+                    classpath: configurations.enhancerTask.asPath)
+        ant.openjpac(tmpClassLoader: true,
+                     classpath: configurations.enhancerRun.asPath) {
+            fileset(dir: "build/classes/java/main/",
+                    includes: '**/net.ugorji.oxygen/forum/data/*.class',
+                    excludes: '**/ForumDAO.class')
+        }
+    }
+}
+
+assemble.dependsOn copyConfig
+//war.dependsOn enhanceJPA
+classes.finalizedBy enhanceJPA
+

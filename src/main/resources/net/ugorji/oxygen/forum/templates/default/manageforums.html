@@ -1,0 +1,31 @@
+<#macro forumrow t x styleclass>
+  <tr <#if (styleclass?has_content)>class="${styleclass}"</#if> >
+    <td><a href="${t.getURL("manageforums", x.getId())}">${t.i18n("forums")}</a></td>
+    <td class="oxyforum-col-primary">${x.getName()}</td>
+    <td>${t.stats().getNumTopicsForForum(x.getId())}</td>
+    <td><nobr><a href="${t.getURL("editforumform", x.getId())}">${t.i18n("edit_forum")}</a> | 
+        <a href="${t.getURL("deleteforum", x.getId())}">${t.i18n("delete_forum")}</a></nobr>
+    </td>
+  </tr>
+</#macro>
+
+<#assign f=t.getForum() >
+<table>
+  <tr>
+    <th colspan="4">${t.i18n("child_forums")} ${f.getName()}</th>
+  </tr>
+  <tr>
+    <th>${t.i18n("expand")}</th>
+    <th class="oxyforum-col-primary">${t.i18n("forum_name")}</th>
+    <th>${t.i18n("num_topics")}</th>
+    <th>${t.i18n("actions")}</th>
+  </tr>
+  <@forumrow t=t x=f styleclass="oxyforum-parentrow" />
+  <#list f.getChildForums() as x>
+    <@forumrow t=t x=x styleclass="" />
+  </#list>
+  <tr>
+    <td colspan="4"><a href="${t.getURL("editforumform", t.getTopForum().getId())}">${t.i18n("create_top_forum")}</a></td>
+  </tr>
+</table>
+

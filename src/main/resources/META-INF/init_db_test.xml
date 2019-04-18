@@ -1,0 +1,27 @@
+<initdb>
+  <user loadkey="u1." iterations="1" title="admin" active="true" />
+  <user loadkey="u2." iterations="1" title="anonymous" active="true" />
+  <user loadkey="u3." iterations="2" title="ugorji" active="true" />
+
+  <forum loadkey="f1." iterations="1" author="u1." title="Top" details="Top Root Forum" />
+  <forum loadkey="f2." iterations="2" author="u3." title="Ugorji" details="Ugorji Forums" parent="f1."/>
+  <forum loadkey="f3." iterations="3" author="u2." title="John" details="John Forums" parent="f1."/>
+  <forum loadkey="f4." iterations="4" author="u2." title="James" details="James Forums" parent="f2.2"/>
+
+  <topic loadkey="t1." iterations="1" author="u1." parent="f1." title="Admin Notice" details="Thanks" />
+  <topic loadkey="t2." iterations="4" author="u3." parent="f2.2" title="Ugorji has a Topic " details="Thanks" />
+  <topic loadkey="t3." iterations="8" author="u2." parent="f3." title="John has a Topic " details="Thanks" />
+  <topic loadkey="t4." iterations="16" author="u2." parent="f4.2" title="James has a Topic " details="Thanks" />
+
+  <post loadkey="p1." iterations="1" author="u1." parent="t1." 
+        title="Admin Post" details="The lord is good " />
+  <post loadkey="p2." iterations="60" author="u1." parent="t2." 
+        title="Ugorji Post" details="He is good all the time " />
+  <post loadkey="p22." iterations="24" author="u1." parent="p2.4" 
+        title="Re: Ugorji Post" details="The Response: He is good all the time " />
+  <post loadkey="p3." iterations="80" author="u1." parent="t3." 
+        title="John Post" details="Ugorji is ok also, but not as cool as " />
+  <post loadkey="p4." iterations="160" author="u1." parent="t4." 
+        title="James Post" details="Akilah is cool too ... I like her style " />
+</initdb>
+

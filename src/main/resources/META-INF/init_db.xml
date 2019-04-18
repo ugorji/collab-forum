@@ -1,0 +1,10 @@
+<initdb>
+  <user loadkey="u1." iterations="1" title="admin" active="true" />
+  <user loadkey="u2." iterations="1" title="anonymous" active="true" />
+
+  <forum loadkey="f1." iterations="1" title="Top" author="u1." details="Top Root Forum" />
+
+  <topic loadkey="t1." iterations="1" title="Admin Notice" author="u1." parent="f1." details="Welcome to Oxygen Forum" />
+
+</initdb>
+

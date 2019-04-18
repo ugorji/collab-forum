@@ -1,0 +1,67 @@
+
+<script language="javascript">
+<!--
+  function oxyforum_searchform_rss() {
+    document.oxyforum_searchform.action = '${t.getURL("rss")}';
+    document.oxyforum_searchform.submit();
+  }
+  function oxyforum_searchform_searchresults() {
+    document.oxyforum_searchform.action = '${t.getURL("searchresults")}';
+    document.oxyforum_searchform.submit();
+  }
+// -->
+</script>
+
+<form name="oxyforum_searchform" action="#" method="get" >
+<div class="oxyforum-form-table">
+<table>
+  <tr>
+    <th colspan="2">${t.i18n("search_forum")}</th>
+  </tr>
+  <tr>
+    <td>${t.i18n("search_contents")}</td>
+    <td><input type="text" size="80" name="TOPIC_CONTENTS" /></td>
+  </tr>
+  <tr>
+    <td>${t.i18n("search_poster")}</td>
+    <td><input type="text" size="80" name="POSTER" /></td>
+  </tr>
+  <tr>
+    <td>${t.i18n("search_title")}</td>
+    <td><input type="text" size="80" name="TITLE" /></td>
+  </tr>
+  <tr>
+    <td>${t.i18n("forum")}</td>
+    <td>
+      <select name="FORUM_ID">
+        <option value="">${t.i18n("search_all_forums")}</option>
+	<@forumTreeAsSelectOptions vindent=1 vforum=t.getTopForum() vselectedid=0 />
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td>${t.i18n("search_last_post_dates")}</td>
+    <td><input type="text" name="TOPIC_LAST_POST_DATE.0" /> ${t.i18n("to")} <input type="text" name="TOPIC_LAST_POST_DATE.1" /><br/>
+        <i>${t.i18n("search_last_post_dates_inline_help")}</i>
+    </td>
+  </tr>
+  <tr>
+    <td>${t.i18n("rss_format")}</td>
+    <td>
+      <select name="rss.format" >
+        <option value="rss_1.0" >${t.i18n("rss_format_rss_1_0")}</option>
+	<option value="rss_2.0" selected>${t.i18n("rss_format_rss_2_0")}</option>
+	<option value="atom_1.0" >${t.i18n("rss_format_atom_1_0")}</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <input type="button" value="${t.i18n("search_text")}" onClick="oxyforum_searchform_searchresults();" />
+      <input type="button" value="${t.i18n("rss_text")}" onClick="oxyforum_searchform_rss();" />
+      <input type="reset" value="${t.i18n("reset")}" />
+    </td>
+  </tr>
+</table>
+</div>
+</form>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="net.ugorji.oxygen.forum.data.MiscInfo" table="oxyforum_misc_info">
+    <cache usage="nonstrict-read-write" />
+
+    <id name="id" column="misc_id" type="long">
+      <generator class="identity"/>
+    </id>
+
+    <property name="key" column="misc_key" type="string" 
+      update="true" insert="true" not-null="true" />
+    
+    <property name="value" column="misc_value" type="string" 
+      update="true" insert="true" not-null="true" />
+    
+  </class>
+
+</hibernate-mapping>

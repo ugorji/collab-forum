@@ -1,0 +1,55 @@
+<#macro forumrow t x styleclass>
+  <tr <#if (styleclass?has_content)>class="${styleclass}"</#if> >
+    <td>
+      <nobr>
+      <#-- <a href="${t.getURL("forums", x.getId())}">${t.i18n("forums")}</a> | -->
+      <a href="${t.getURL("forum", x.getId())}">${t.i18n("topics")}</a>
+      </nobr>
+    </td>
+    <td class="oxyforum-col-primary"><b>${t.getAbsoluteName(x)?html}</b><br/>
+        ${x.getDescription()?html}
+    </td>
+    <td>${t.stats().getNumPostsForForum(x.getId())}</td>
+    <td>${t.stats().getNumTopicsForForum(x.getId())}</td>
+    <td><#if (t.getLastPost(x)?exists)><nobr>${t.getLastPost(x).getDate()?datetime}</nobr> <nobr>${t.i18n("by")} <a href="${t.getURL("userprofile", t.getLastPost(x).getAuthor().getId() )}">${t.getLastPost(x).getAuthor().getName()}</a></nobr></#if></td>
+  </tr>
+</#macro>
+
+<#macro forumandchildrenrow t f>
+  <@forumrow t=t x=f styleclass="" />
+  <#list f.getChildForums() as y>
+    <@forumandchildrenrow t=t f=y />
+  </#list>
+</#macro>
+
+<#assign f=t.getTopForum() >
+<#assign v2=t.getForumEngine().getForumStatisticsManager() >
+
+<table>
+  <tr>
+    <th colspan="5">${t.i18n("all_forums_under")} ${f.getName()?html}</th>
+  </tr>
+  <tr>
+    <th>${t.i18n("actions")}</th>
+    <th class="oxyforum-col-primary">${t.i18n("forum_name")}</th>
+    <th><nobr>${t.i18n("num_topics")}</nobr></th>
+    <th><nobr>${t.i18n("num_posts")}</nobr></th>
+    <th>${t.i18n("last_post")}</th>
+  </tr>
+  <@forumandchildrenrow t=t f=f />
+  <tr>
+    <td colspan="5">${t.i18n("footer_line")}</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>${t.i18n("who_is_online")}</th>
+  </tr>
+  <tr>
+    <td>${t.i18n("total_posted_messages", v2.getNumPostedMessages()?string)} <br/>
+        ${t.i18n("total_registered_users", v2.getNumRegisteredUsers()?string)} <br/>
+        ${t.i18n("total_users_online", t.getForumEngine().getNumOpenSessions()?string)} <br/>
+    </td>
+  </tr>
+</table>

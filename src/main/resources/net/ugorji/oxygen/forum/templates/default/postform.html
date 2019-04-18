@@ -1,0 +1,104 @@
+<#--
+  This supports the following - only one of them should be specified
+  - Edit a given post  (+ postid)
+  - Create a new post  (+ parentpostid)
+  - Edit a topit       (+ topicid)
+  - Create a new Topic (+ forumid)
+  - Consequently, there will be a hidden field for only one of these, and the 
+    Model passed will have variables for this: key and value
+-->
+<#assign p=post.getPost() >
+
+<script LANGUAGE="JavaScript">
+<!--
+function oxyforumPreviewHTML()
+{
+  var oxyurl = '${t.getURL("markuptohtml")}';
+  var oxypars = 'text=' + encodeURIComponent($('oxyforum-text').value);	
+  var oxyAjax = new Ajax.Updater('oxy-tabpane-postform-div-2', oxyurl, {method: 'post', postBody: oxypars});
+}
+// -->
+</script>
+
+<form action="${t.getURL("post")}" method="post" >
+<input type="hidden" name="topicid" value="${(post.getTopicId())?default("")}" />
+<input type="hidden" name="forumid" value="${(post.getForumId())?default("")}" />
+<input type="hidden" name="postid" value="${(post.getPostId())?default("")}" />
+<input type="hidden" name="parentpostid" value="${(post.getParentPostId())?default("")}" />
+
+<div class="oxyforum-form-table">
+<table>
+  <tr>
+    <th colspan="2">${t.i18n("edit_post_page_header")}</th>
+  </tr>
+  <tr>
+    <td>${t.i18n("post_subject")}</td>
+    <td><input type="text" size="80" name="subject" value="${p.getSubject()}" /></td>
+  </tr>
+  <tr >
+    <td id="oxy-tabpane-postform-tab-1" class="oxy-tabpane-tab-active"><a href="#"   onClick="javascript:oxy_select_tab(1, '-postform');">${t.i18n("edit_ui")}</a></td>
+    <td id="oxy-tabpane-postform-tab-2" class="oxy-tabpane-tab-inactive"><a href="#" onClick="javascript:oxyforumPreviewHTML();oxy_select_tab(2, '-postform');">${t.i18n("preview")}</a></td>
+    <td id="oxy-tabpane-postform-tab-3" class="oxy-tabpane-tab-inactive"><a href="#" onClick="javascript:oxy_select_tab(3, '-postform');">${t.i18n("help_text")}</a></td>
+  </tr>
+</table>
+
+<div class="oxy-tabpane-div">
+
+<div id="oxy-tabpane-postform-div-1" style="display:block" >
+    ${t.i18n("post_message_text")}<br/>
+    <textarea id="oxyforum-text" name="text" cols="80" rows="16" >${p.getText()}</textarea>
+</div>
+
+<div id="oxy-tabpane-postform-div-2" style="display:none; background:fixed url(${t.getContextPath()}/images/previewbg.gif);">
+&nbsp; <br/>
+&nbsp; <br/>
+&nbsp; <br/>
+</div>
+
+<div id="oxy-tabpane-postform-div-3" style="display:none" >
+<pre>
+${t.i18n("edit_help")}
+</pre>
+</div>
+
+</div>
+
+<table>
+  <#if (post.isCreateNewTopic()) >
+  <tr>
+    <td>${t.i18n("forum_flags")}</td>
+    <td>
+      <input id="editforum_write" type="checkbox" name="write" value="true" ${p.isWrite()?string("checked", "")}/>
+      <label for="editforum_write">${t.i18n("fprum_write")}</label>
+      <input id="editforum_read" type="checkbox" name="read" value="true" ${p.isRead()?string("checked", "")}/>
+      <label for="editforum_read">${t.i18n("forum_read")}</label>
+      <input id="editforum_high_visibility" type="checkbox" name="highvisibility" value="true" ${p.isHighvisibility()?string("checked", "")}/>
+      <label for="editforum_high_visibility">${t.i18n("forum_high_visibility")}</label>
+    </td>
+  </tr>
+  </#if>
+  <#if (post.isCaptchaEnabled()) >
+  <tr>
+    <td>${t.i18n("post_captcha")}</td>
+    <td>
+      <img src="${t.getURL("captcha")}" />
+      <input type="text" size="80" name="j_captcha_response" value="" /><br/>
+      ${t.i18n("post_captcha_message")}
+    </td>
+  </tr>
+  </#if>
+  <tr>
+    <td colspan="2">
+      <input type="submit" value="${t.i18n("submit")}" />
+      <input type="reset" value="${t.i18n("reset")}" />
+      <input type="button" value="${t.i18n("edit_ui")}" onClick="oxy_select_tab(1, '-postform');"/>
+      <input type="button" value="${t.i18n("preview")}" onClick="oxyforumPreviewHTML(); oxy_select_tab(2, '-postform');"/>
+      <input type="button" value="${t.i18n("help_text")}" onClick="oxy_select_tab(3, '-postform');"/>
+      <input type="button" value="${t.i18n("cancel")}" onClick="location.href='${post.getCancelURL()}'" />
+    </td>
+  </tr>
+</table>
+</div>
+
+</form>
+

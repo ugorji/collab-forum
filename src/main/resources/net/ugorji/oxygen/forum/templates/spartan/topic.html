@@ -1,0 +1,18 @@
+ <#macro topicInTree vindent vpost>
+  <tr>
+  <td>
+  <#list 1..vindent as v99> &nbsp; &nbsp; </#list> . 
+  <a name="t-${vpost.getId()}" /><a href="#x-${vpost.getId()}">${vpost.getSubject()?html}</a>
+  </td>
+  <td>
+  <a href="${t.getURL("userprofile", vpost.getTopic().getForum().getId(), vpost.getAuthor().getId())}">${vpost.getAuthor().getName()}</a>
+  </td>
+  <td>
+  ${vpost.getDate()}
+  </td>
+  </tr>
+  <#list vpost.getChildPosts() as v3>
+    <@topicInTree vindent=vindent+1 vpost=v3 />
+  </#list>
+</#macro>
+ 

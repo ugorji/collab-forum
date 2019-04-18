@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd">
+<Configure class="org.eclipse.jetty.webapp.WebAppContext">
+  
+  <!--
+  <New id="OxyForumDataSource" class="org.eclipse.jetty.plus.jndi.Resource">
+  <Arg><Ref refid="collab-forum"/></Arg>
+    ...
+    <New class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
+    <New class="com.mysql.cj.jdbc.Driver">
+    ...
+  </New>
+    
+  <Set name="securityHandler">
+    <New class="org.eclipse.jetty.security.ConstraintSecurityHandler">
+     <Set name="loginService">
+       <New class="org.eclipse.jetty.jaas.JAASLoginService">
+         <Set name="name">oxyforum</Set>
+         <Set name="loginModuleName">oxyforum</Set>
+       </New>
+     </Set>
+    </New>
+  </Set>
+  -->
+  
+  <New id="OxyForumDataSource" class="org.eclipse.jetty.plus.jndi.Resource">
+    <Arg><Ref refid="collab-forum"/></Arg>
+    <Arg>jdbc/OxyForumDataSource</Arg>
+    <Arg>
+      <New class="com.mysql.cj.jdbc.MysqlConnectionPoolDataSource">
+        <Set name="Url">jdbc:mysql://localhost:3306/collab</Set>
+        <Set name="User">collab</Set>
+        <Set name="Password">pw4collab</Set>
+      </New>
+    </Arg>
+  </New>
+  
+  
+</Configure>
+

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+  <class name="net.ugorji.oxygen.forum.data.User" table="oxyforum_user">
+    <cache usage="nonstrict-read-write" />
+    
+    <id name="id" column="user_id" type="long">
+      <generator class="identity"/>
+    </id>
+
+    <property name="active" type="boolean" update="true" insert="true" column="user_active" not-null="true" />
+    <property name="lastvisit" type="timestamp" update="true" insert="true" column="user_lastvisit" not-null="true" />
+    <property name="name" type="string" update="true" insert="true" column="user_name" not-null="true" />
+    <property name="numPosts" type="integer" update="true" insert="true" column="user_posts" not-null="true" />
+    <property name="regdate" type="timestamp" update="true" insert="true" column="user_regdate" not-null="false" />
+
+    <set name="posts" inverse="true" cascade="none" sort="unsorted">
+      <cache usage="nonstrict-read-write" />
+      <key column="poster_id"></key>
+      <one-to-many class="net.ugorji.oxygen.forum.data.Post" />
+    </set>
+
+    <set name="topics" inverse="true" cascade="none" sort="unsorted">
+      <cache usage="nonstrict-read-write" />
+      <key column="topic_poster_id"></key>
+      <one-to-many class="net.ugorji.oxygen.forum.data.Topic" />
+    </set>
+
+    <set name="watchedTopics" table="oxyforum_topic_watch" cascade="none" sort="unsorted">
+      <cache usage="nonstrict-read-write" />
+      <key column="user_id"></key>
+      <many-to-many class="net.ugorji.oxygen.forum.data.Topic" column="topic_id" outer-join="auto" />
+    </set>
+
+  </class>
+</hibernate-mapping>
+

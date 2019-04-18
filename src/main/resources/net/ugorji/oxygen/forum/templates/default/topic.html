@@ -1,0 +1,223 @@
+<#macro topicInTree vindent vpost>
+  <tr >
+  <td>
+  <#list 1..vindent as v99> &nbsp; &nbsp; </#list> . 
+  <a name="t-${vpost.getId()?c}" /><a href="#x-${vpost.getId()?c}">${vpost.getSubject()?html}</a>
+  </td>
+  <td>
+  <a href="${t.getURL("userprofile", vpost.getAuthor().getId())}">${vpost.getAuthor().getName()}</a>
+  </td>
+  <td>
+  ${vpost.getDate()?datetime}
+  </td>
+  </tr>
+  <#list vpost.getChildPosts() as v3>
+    <@topicInTree vindent=vindent+1 vpost=v3 />
+  </#list>
+</#macro>
+
+<#macro postInTableThreaded t x vindent vAllowPostToTopic vSupportThreadView>
+  <#if (t.isTopicViewSpartan()) >
+    <@postInTableSpartan t=t  vindent=vindent x=x vAllowPostToTopic=vAllowPostToTopic vSupportThreadView=vSupportThreadView />
+  <#else>
+    <@postInTable t=t  vindent=vindent x=x vAllowPostToTopic=vAllowPostToTopic vSupportThreadView=vSupportThreadView />
+  </#if>
+  <#list x.getChildPosts() as v3>
+    <@postInTableThreaded t=t vindent=vindent+1 x=v3 vAllowPostToTopic=vAllowPostToTopic vSupportThreadView=vSupportThreadView />
+  </#list>
+</#macro>
+
+<#macro postInTableChronological t t2 vAllowPostToTopic vSupportThreadView>
+  <#list t2.getAllposts() as x>
+    <#if (t.isTopicViewSpartan()) >
+      <@postInTableSpartan t=t  vindent=0 x=x vAllowPostToTopic=vAllowPostToTopic vSupportThreadView=vSupportThreadView />
+    <#else>
+      <@postInTable t=t  vindent=0 x=x vAllowPostToTopic=vAllowPostToTopic vSupportThreadView=vSupportThreadView />
+    </#if>
+  </#list>
+</#macro>
+
+<#macro postInTableTop t x vAllowPostToTopic vSupportThreadView vSpartanView>
+<div class="oxyforum-post-in-table-top">
+  <#if vSupportThreadView >
+  <span class="oxyforum-align-right">&nbsp;&nbsp;</span>
+  <a href="#t-${x.getId()?c}"><span class="oxyforum-align-right">${t.i18n("topic_thread_list")}</span></a>
+  </#if>
+  <#if vAllowPostToTopic >
+  <#assign vArgsMap={"parentpostid":x.getId()?c} >
+  <span class="oxyforum-align-right">&nbsp;&nbsp;</span>
+  <a href="${t.getURL("postform", vArgsMap)}"><span class="oxyforum-align-right">${t.i18n("topic_reply")}</span></a> 
+  </#if>
+  <span class="oxyforum-align-right">&nbsp;&nbsp;</span>
+  <span class="oxyforum-align-right"> | </span>
+  
+  <#if (vSpartanView && t.getUserpref(v4, "avatar")?exists)>
+  <span class="oxyforum-align-left"><img src="${t.getUserpref(v4, "avatar")}" width="16" height="16" border="0" align="left" valign="top" /></span>
+  </#if>
+  <#assign vArgs=[x.getId()?c, (x.getParentPost().getId()?c)?default(""), (x.getDate()?datetime)?string, v4, t.getURL("userprofile", x.getAuthor().getId()) ] >
+  <span class="oxyforum-align-left">${t.i18n("topic_posted_by_details", vArgs)} | </span>
+  <center><span class="oxyforum-post-in-table-top-subject">${x.getSubject()}</span></center>
+</div>
+</#macro>
+
+<#macro postInTable t x vindent vAllowPostToTopic vSupportThreadView>
+<#assign v4=x.getAuthor().getName() >
+<a name="x-${x.getId()?c}" />
+<div style="padding-left:${(20*vindent)}px; ">
+<div class="oxyforum-post-in-table-all"> 
+<@postInTableTop t=t  x=x vAllowPostToTopic=vAllowPostToTopic vSupportThreadView=vSupportThreadView vSpartanView=false />
+<div class="oxyforum-post-in-table-avatar">
+  <b><a href="${t.getURL("userprofile", x.getAuthor().getId())}">${v4}</a></b><br/>
+  <#if (t.getUserpref(v4, "avatar")?exists)>
+  <img src="${t.getUserpref(v4, "avatar")}" width="80" height="80" border="0" align="left" valign="top" /><br/>
+  </#if>
+  <p/>
+  <nobr>${t.i18n("topic_joined")} ${x.getAuthor().getRegdate()?date}</nobr>
+  <br/>
+  <nobr>${t.i18n("topic_num_posts")} ${t.stats().getNumPostsForUser(x.getAuthor().getId())}</nobr> 
+</div>
+<div class="oxyforum-post-in-table-details">
+  
+  ${t.writeTextAsHtmlMarkup(x.getText(), writer)}
+  <#if (t.getUserpref(v4, "signature")?exists)>
+  <#assign vtmp=t.getUserpref(v4, "signature") >
+  <div class="oxyforum-post-in-table-signature">
+  ${t.writeTextAsHtmlMarkup(vtmp, writer)}
+  </div>
+  </#if>
+</div>
+<div class="oxyforum-post-in-table-bottom">
+  <#if (t.getUserpref(v4, "email")?has_content)><a href="mailto:${t.getUserpref(v4, "email")}">${t.i18n("topic_email")}</a> | </#if>
+  <#if (t.getUserpref(v4, "yim")?has_content)><a href="ymsgr:sendim?${t.getUserpref(v4, "yim")}">${t.i18n("topic_yahoo_im")}: ${t.getUserpref(v4, "yim")}</a> | </#if>
+  <#if (t.getUserpref(v4, "aim")?has_content)><a href="aim:goim?screenname=${t.getUserpref(v4, "aim")}">${t.i18n("topic_aol_im")}: ${t.getUserpref(v4, "aim")}</a> | </#if>
+  <#if (t.getUserpref(v4, "msnm")?has_content)>${t.i18n("topic_msn_im")}: ${t.getUserpref(v4, "msnm")} | </#if>
+  <#if (t.getUserpref(v4, "website")?has_content)><a href="${t.getUserpref(v4, "website")}">${t.getUserpref(v4, "website")}</a> | </#if>
+</div>
+</div>
+</div>
+<p/>
+</#macro>
+
+<#macro postInTableSpartan t x vindent vAllowPostToTopic vSupportThreadView>
+<#assign v4=x.getAuthor().getName() >
+<a name="x-${x.getId()?c}" />
+<div style="padding-left:${(20*vindent)}px; ">
+<div class="oxyforum-post-in-table-all" >
+<@postInTableTop t=t  x=x vAllowPostToTopic=vAllowPostToTopic vSupportThreadView=vSupportThreadView vSpartanView=true />
+<div>
+  
+  ${t.writeTextAsHtmlMarkup(x.getText(), writer)}
+  <#if (t.getUserpref(v4, "signature")?exists)>
+  <#assign vtmp=t.getUserpref(v4, "signature") >
+  <div class="oxyforum-post-in-table-signature">
+  ${t.writeTextAsHtmlMarkup(vtmp, writer)}
+  </div>
+  </#if>
+</div>
+</div>
+</div>
+<p/>
+</#macro>
+
+<#assign t2=t.getTopic() >
+<#assign vAllowPostToTopic=t2.isWrite() >
+<#assign vSupportThreadView=t.isSupportThreadView()>
+
+<script LANGUAGE="JavaScript">
+<!--
+  function oxyforum_show_thread(bval) {
+    if(bval) {
+      document.getElementById('oxyforum_thread_table').style.display = "block";
+    } else {
+      document.getElementById('oxyforum_thread_table').style.display = "none";
+    }
+  }
+-->
+</script>
+
+<h2>${t2.getTitle()?html}</h2>
+
+<#assign vArgsMap={"parentpostid":t2.getId()?c} >
+<a href="${t.getURL("postform", vArgsMap)}">${t.i18n("create_post")}</a>
+|
+<#if (t.isUserWatching(t2))>
+<a href="${t.getURL("unsubscribetopic", t2.getId())}">${t.i18n("unsubscribe_topic")}</a>
+<#else>
+<a href="${t.getURL("subscribetopic", t2.getId())}">${t.i18n("subscribe_topic")}</a>
+</#if>
+|
+<#assign vArgsMap={"topicid":t2.getId()?c} >
+<a href="${t.getURL("edittopicform", t2.getId(), vArgsMap)}">${t.i18n("edit_topic")}</a>
+<#if vSupportThreadView>
+|
+${t.i18n("topic_view")}
+<#if (t.isThreadedView())>
+<#assign vArgsMap={"topicview":"chronological"} >
+${t.i18n("topic_thread_view")}
+<a href="${t.getURL("topic", t2.getId(), vArgsMap)}">${t.i18n("topic_chronological_view")}</a>
+<#else>
+<#assign vArgsMap={"topicview":"thread"} >
+<a href="${t.getURL("topic", t2.getId(), vArgsMap)}">${t.i18n("topic_thread_view")}</a>
+${t.i18n("topic_chronological_view")}
+</#if>
+</#if>
+
+<p/>
+
+<#if (vSupportThreadView) >
+<div class="oxyforum-topic-thread-tree-table">
+<table>
+<tr><th>
+<b>
+${t.i18n("topic_threaded_replies")} 
+(<a href="javascript:oxyforum_show_thread(true);">${t.i18n("show")}</a>
+<a href="javascript:oxyforum_show_thread(false);">${t.i18n("hide")}</a>)
+</b></th></tr>
+<tr><td>
+<table id="oxyforum_thread_table" class="oxy-noborder" >
+<@topicInTree vindent=1 vpost=t2 />
+</table>
+</td></tr>
+</table>
+</div>
+
+<p/>
+</#if>
+
+<h3>${t.i18n("messages")}</h3>
+<#if (t.isThreadedView()) >
+<@postInTableThreaded t=t vindent=1 x=t2 vAllowPostToTopic=vAllowPostToTopic vSupportThreadView=vSupportThreadView />
+<#else>
+<@postInTableChronological t=t t2=t2 vAllowPostToTopic=vAllowPostToTopic vSupportThreadView=vSupportThreadView />
+</#if>
+
+<#assign v_attachment_sub_path="net.ugorji.oxygen/forum/topic/${t.getViewId()?c}/" >
+<#assign v_attachment_next_view="topic" >
+<#assign v_attachment_context="${t.getViewId()?c}" >
+
+<#include "snip_attachments.html" parse="true" >
+
+
+<#-- 
+<br/>_________________________________<br/> 
+<hr class="oxyforum-light-hr" align="left" /> 
+<tr class="oxyforum-row-${(x_index % 2)}">
+-->
+
+<#-- 
+<#if (t.isShowMessageThread())>
+<#assign vArgsMap={"showmessagethread":"false"} >
+${t.i18n("show")}
+<a href="${t.getURL("topic", t2.getId(), vArgsMap)}">${t.i18n("hide")}</a>
+<#else>
+<#assign vArgsMap={"showmessagethread":"true"} >
+<a href="${t.getURL("topic", t2.getId(), vArgsMap)}">${t.i18n("show")}</a>
+${t.i18n("hide")}
+</#if>
+-->
+
+<#-- 
+<#if (t.isShowMessageThread())>
+<@topicInTree vindent=1 vpost=t2 />
+</#if>
+-->

@@ -1,0 +1,11 @@
+log4j.rootLogger=stdout
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=%-6r %-5p [%t] %c{2}.%M[%L] - %m%n
+log4j.logger.org.apache.myfaces.application.NavigationHandlerImpl=TRACE
+log4j.logger.org.apache.myfaces.lifecycle.LifecycleImpl=TRACE
+log4j.logger.javax.faces.webapp.FacesServlet=TRACE
+log4j.logger.org.apache.myfaces.application.NavigationHandlerImpl=TRACE
+log4j.logger.org.apache.myfaces.application.ApplicationImpl=TRACE
+log4j.logger.org.apache.myfaces.el.VariableResolverImpl=DEBUG
+log4j.logger.org.apache.myfaces.util.DebugUtils=TRACE
