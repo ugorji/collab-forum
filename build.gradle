@@ -26,7 +26,7 @@ dependencies {
         'org.apache.lucene:lucene-core:2.9.4',
         'javax.servlet:javax.servlet-api:4.0.1',
         'javax.portlet:portlet-api:3.0.1',
-        'org.apache.openjpa:openjpa:3.0.0',
+        'org.apache.openjpa:openjpa:3.1.2',
         //'org.apache.openjpa:openjpa:2.4.3',
         'net.sourceforge.serp:serp:1.15.1',
         'jca:jca:1.5',
@@ -34,8 +34,8 @@ dependencies {
         'com.kenai.nbpwr:com-sun-syndication-feed:1.0-201002241208'
 
     // enhancer depends on META-INF/persistence.xml, built classes and java-common classes
-    enhancerTask 'org.apache.openjpa:openjpa:3.0.0'
-    enhancerRun 'org.apache.openjpa:openjpa:3.0.0',
+    enhancerTask 'org.apache.openjpa:openjpa:3.1.2'
+    enhancerRun 'org.apache.openjpa:openjpa:3.1.2',
         files('src/main/resources/',
               'build/classes/java/main/',
               new File(project(':java-common').buildDir, "classes/java/main"))
@@ -57,7 +57,7 @@ war {
 gretty {
     servletContainer = "jetty9"
     scanInterval = 0
-    //jvmArgs = ["-javaagent:${projectDir}/build/collab-app/config/openjpa-3.0.0.jar"]
+    //jvmArgs = ["-javaagent:${projectDir}/build/collab-app/config/openjpa-3.1.2.jar"]
     realm 'oxyforum'
     realmConfigFile "${projectDir}/build/collab-app/config/jetty-realm.properties"
     classPath "${projectDir}/build/collab-app/config"
